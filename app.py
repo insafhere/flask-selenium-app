@@ -100,20 +100,17 @@ def extract_results(url):
     options.add_argument("--headless")
     options.add_argument("--disable-gpu")
     options.add_argument("--no-sandbox")
-    
-    # Render -Does not work
-    # chrome_bin = os.getenv('CHROME_BIN', '/usr/bin/google-chrome-stable')
 
-    # Render settings
-    chrome_bin = "/usr/bin/chromium"
-    options.binary_location = chrome_bin
-    service = Service(chromedriver_autoinstaller.install())
-    driver = webdriver.Chrome(service=service, options=options)
-
-    # Local settings
-    # chromedriver_path = '/usr/local/bin/chromedriver'
-    # service = Service(executable_path=chromedriver_path)
-    # driver = webdriver.Chrome(service=service, options=options)
+    # Use environment variable to detect Render vs Local
+    if os.getenv('RENDER') == 'true':  # Check if the environment is Render
+        chrome_bin = "/usr/bin/chromium"  # Render's default Chromium binary
+        options.binary_location = chrome_bin
+        service = Service(chromedriver_autoinstaller.install())
+        driver = webdriver.Chrome(service=service, options=options)
+    else:
+        chromedriver_path = '/usr/local/bin/chromedriver'
+        service = Service(executable_path=chromedriver_path)
+        driver = webdriver.Chrome(service=service, options=options)
 
     url = cleanup_url(url)
     domain = extract_domain(url)
