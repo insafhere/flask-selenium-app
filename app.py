@@ -4,6 +4,7 @@ import re
 from flask import Flask, render_template, request
 import time
 from urllib.parse import urlparse, urlunparse
+import chromedriver_autoinstaller
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
@@ -15,9 +16,6 @@ from xml.etree import ElementTree
 import concurrent.futures
 
 app = Flask(__name__)
-
-# Specify the path to chromedriver
-chromedriver_path = '/usr/local/bin/chromedriver'  # Update this path if necessary
 
 def extract_domain(url):
     print("Extract domain from the URL.")
@@ -95,11 +93,16 @@ def fetch_data_concurrently(driver, url, domain, product_xml_url):
 def extract_results(url):
     start_time = time.time()
 
+    # Automatically download and install the correct version of chromedriver
+    chromedriver_autoinstaller.install()
+
     options = Options()
     options.add_argument("--headless")
     options.add_argument("--disable-gpu")
     options.add_argument("--no-sandbox")
-    service = Service(executable_path=chromedriver_path)
+    
+    # Use the installed chromedriver without specifying the path manually
+    service = Service(chromedriver_autoinstaller.install())
     driver = webdriver.Chrome(service=service, options=options)
 
     url = cleanup_url(url)
