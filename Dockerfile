@@ -21,11 +21,8 @@ COPY . /app
 # Install Python dependencies from the requirements.txt file
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Make port 5000 available to the world outside the container
+# Expose port 5000 to Render's server
 EXPOSE 5000
 
-# Install gunicorn
-RUN pip install gunicorn
-
-# Run with gunicorn for production environments
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "app:app"]
+# Command to run the app using Gunicorn
+CMD ["gunicorn", "-b", "0.0.0.0:5000", "app:app"]

@@ -17,6 +17,8 @@ import concurrent.futures
 
 app = Flask(__name__)
 
+# Your existing functions (extract_domain, cleanup_url, etc.)
+
 def extract_domain(url):
     print("Extract domain from the URL.")
     match = re.search(r'://([^/]+)', url)
