@@ -21,7 +21,7 @@ app = Flask(__name__)
 
 def extract_domain(url):
     print("Extract domain from the URL.")
-    
+
     # Match 'http://' or 'https://' at the start and remove it if present
     match = re.sub(r'^(?:http://|https://)', '', url)
     
@@ -179,12 +179,8 @@ def home():
                            product_name_text=product_name_text)
 
 if __name__ == "__main__":
-    # Check if the app is running on Render (or in production)
-    if os.getenv('RENDER') == 'true':
-        # In production, we want Gunicorn to take over the app
-        pass  # Gunicorn will handle this in production
-    else:
-        # Running locally, so we start Flask's development server
-        host = "0.0.0.0"  # Localhost binding for local development
-        port = int(os.getenv('PORT', 5000))  # Default to 5000 locally, use Render's PORT env variable
+    # Start the development server only if running locally
+    if os.getenv('RENDER') != 'true':
+        host = "0.0.0.0"
+        port = int(os.getenv('PORT', 5000))
         app.run(debug=True, host=host, port=port)
