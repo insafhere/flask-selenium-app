@@ -101,6 +101,10 @@ def extract_results(url):
     options.add_argument("--disable-gpu")
     options.add_argument("--no-sandbox")
     
+    # Set the Chrome binary location using environment variable (will be set in Render)
+    chrome_bin = os.getenv('CHROME_BIN', '/usr/bin/google-chrome-stable')
+    options.binary_location = chrome_bin
+
     # Use the installed chromedriver without specifying the path manually
     service = Service(chromedriver_autoinstaller.install())
     driver = webdriver.Chrome(service=service, options=options)
