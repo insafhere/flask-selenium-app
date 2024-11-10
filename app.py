@@ -21,10 +21,16 @@ app = Flask(__name__)
 
 def extract_domain(url):
     print("Extract domain from the URL.")
-    match = re.search(r'://([^/]+)', url)
-    if match:
-        return match.group(1)
-    return None
+    
+    # Match 'http://' or 'https://' at the start and remove it if present
+    match = re.sub(r'^(?:http://|https://)', '', url)
+    
+    # Extract everything up to the first '/', or return the whole string if no '/' is present
+    domain = match.split('/')[0]
+
+    print("Domain : ", domain)
+    
+    return domain
 
 def cleanup_url(url):
     print("Clean URL query parameters.")
@@ -53,7 +59,8 @@ def extract_date_from_xml(xml_content):
         return None, None, None
 
     except Exception as e:
-        return f"Error extracting date: {str(e)}", None, None
+        print(f"Error extracting date: {str(e)}")
+        return None, None, None
 
 def get_domain_registration_date(driver, domain):
     print("Get domain registration date using WHOIS.")
@@ -117,7 +124,8 @@ def extract_results(url):
     url = cleanup_url(url)
     domain = extract_domain(url)
     if not domain:
-        return "Invalid URL", None, None, None, None, None, None, None, None, None, None
+        print("Invalid URL")
+        return None, None, None, None, None, None, None, None, None, None, None
 
     ads_library_url = f"https://www.facebook.com/ads/library/?ad_type=all&search_type=keyword_unordered&media_type=all&active_status=active&country=ALL&q={domain}"
     product_xml_url = f"{url}.xml"
@@ -135,7 +143,8 @@ def extract_results(url):
         whois_url, registration_date, registration_days_ago = whois_data
 
     except Exception as e:
-        result_count = f"Error occurred: {str(e)}"
+        print(f"Result Count - Error occurred: {str(e)}")
+        print("result count : ", result_count)
         created_at_date = created_days_ago = whois_url = registration_date = registration_days_ago = product_name_text = None
 
     driver.quit()
