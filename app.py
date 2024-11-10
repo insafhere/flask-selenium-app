@@ -102,6 +102,7 @@ def extract_results(url):
     options.add_argument("--no-sandbox")
     
     # Set the Chrome binary location using the Render environment path for Chromium
+    #chrome_bin = os.getenv('CHROME_BIN', '/usr/bin/google-chrome-stable')
     chrome_bin = "/usr/bin/chromium"
     options.binary_location = chrome_bin
 
