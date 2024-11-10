@@ -1,16 +1,13 @@
 # Use an official Python runtime as a parent image
 FROM python:3.11-slim
 
-# Install Chromium and Chromedriver
+# Install Chromium (without Chromedriver as autoinstaller will handle it)
 RUN apt-get update && \
-    apt-get install -y \
-    chromium \
-    chromium-driver \
-    && rm -rf /var/lib/apt/lists/*
+    apt-get install -y chromium && \
+    rm -rf /var/lib/apt/lists/*
 
-# Set environment variables for Chromium and Chromedriver
+# Set environment variables for Chromium
 ENV CHROMIUM_BIN=/usr/bin/chromium
-ENV CHROMEDRIVER_BIN=/usr/bin/chromedriver
 ENV PYTHONUNBUFFERED=1  
 
 # Set the working directory
