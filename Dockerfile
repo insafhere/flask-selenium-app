@@ -24,5 +24,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Make port 5000 available to the world outside the container
 EXPOSE 5000
 
-# Define the command to run the app
-CMD ["python", "app.py"]
+# Install gunicorn
+RUN pip install gunicorn
+
+# Run with gunicorn for production environments
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "app:app"]
