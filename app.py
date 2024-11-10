@@ -157,4 +157,8 @@ def home():
                            product_name_text=product_name_text)
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    # Determine the host and port
+    host = "0.0.0.0"  # Render requires the app to bind to 0.0.0.0
+    port = int(os.getenv('PORT', 5000))  # Default to 5000 locally, use Render's PORT env variable
+
+    app.run(debug=True, host=host, port=port)
