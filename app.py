@@ -31,6 +31,13 @@ import logging
 
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
+from sqlalchemy import func
+from datetime import datetime, timedelta
+from dateutil import parser
+from flask import request, redirect
+from whois import whois
+from urllib.parse import urlparse, parse_qs, unquote, urlencode, urlunparse
+
 app = Flask(__name__)
 
 # Configure SQLite database
@@ -261,9 +268,6 @@ def get_domain_registration_date(driver, domain):
 
     return whois_url, registration_date, days_ago
 
-from whois import whois
-
-
 def format_to_dd_mon_yyyy(registration_date):
     try:
         if isinstance(registration_date, datetime):
@@ -437,9 +441,6 @@ def extract_results(url):
     print(status)
 
     return status
-
-from urllib.parse import urlparse, parse_qs, unquote, urlencode, urlunparse
-
 
 def clean_fb_href_link(url):
     # print("Original URL Given:", url)
@@ -1392,8 +1393,6 @@ def test_system_ready(driver):
 def get_count_difference(count_history, result_count):
     return result_count - int(count_history.split('>')[0].strip())
 
-from flask import request, redirect
-
 @app.route('/update_page_count/<int:data_id>', methods=['POST'])
 def update_page_count(data_id):
     # Fetch the data from the database by id
@@ -1753,8 +1752,7 @@ def update_product_days_ago():
     # Redirect to the view_product_data page or render a success message
     return redirect("/view_product_data")
 
-from datetime import datetime, timedelta
-from dateutil import parser
+
 
 def validate_and_format_date(date_string):
     try:
@@ -1882,8 +1880,6 @@ def edit_product_data():
     
     return redirect("/view_product_data")  # Redirect back to the view data page
 
-
-from sqlalchemy import func
 
 @app.route("/view_page_data")
 def view_page_data():
@@ -2274,9 +2270,9 @@ if __name__ == "__main__":
             start_scheduler()  # Start the scheduler
             
             # Run keyword loop search - have to run in a seperate thread to not block main app
-            thread = threading.Thread(target=keyword_loop_search)
-            thread.daemon = True  # Make the thread a daemon so it exits when the main program exits
-            thread.start()
+            # thread = threading.Thread(target=keyword_loop_search)
+            # thread.daemon = True  # Make the thread a daemon so it exits when the main program exits
+            # thread.start()
 
             # thread = threading.Thread(target=update_all_page_count_scheduler_tracked)
             # thread.daemon = True
