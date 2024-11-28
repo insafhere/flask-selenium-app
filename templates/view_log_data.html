@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <title>Log Data</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        h1 {
+            text-align: center;
+
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background-color: #fff;
+            z-index: 10;
+            margin: 0;
+            padding: 5px 0;
+            font-size: 1.5em;
+
+        }
+
+        /* Icons container with centered layout */
+        .icons-container {
+            display: flex;
+            justify-content: center; /* Center the icons horizontally */
+            align-items: center; /* Align items vertically in the center */
+            margin-top: 10px;
+            margin-bottom: 0px; /* Space below the icons section */
+            max-width: 1000px; /* Limit the maximum width of the container */
+            margin-left: auto; /* Center the container horizontally */
+            margin-right: auto; /* Center the container horizontally */
+        }
+
+        .icons-container a {
+            text-decoration: none; /* Remove underline from links */
+            color: #333; /* Default icon color */
+            font-size: 14px; /* Set icon size */
+            text-align: center; /* Align text under the icon */
+            padding: 10px; /* Add some space around the icon */
+            display: inline-block; /* Make links behave like buttons */
+            border-radius: 5px; /* Round corners of the button */
+            transition: background-color 0.3s, color 0.3s; /* Smooth hover transition */
+        }
+
+        .icons-container a:hover {
+            background-color: rgb(27, 184, 174); /* Change background color on hover */
+            color: white; /* Change text color on hover */
+        }
+
+        .icons-container i {
+            font-size: 20px; /* Increase icon size */
+            margin-bottom: 5px; /* Space between icon and text */
+        }
+        
+        /* Style for the active tab */
+        .icons-container a.active {
+            background-color: rgb(27, 184, 174); /* Background color for active tab */
+            color: white; /* White text for the active tab */
+            border-radius: 5px; /* Round corners for the active tab */
+        }
+
+        /* Container for search bar */
+        .search-container {
+            margin-top: 0px; /* Space between icons and search bar */
+            text-align: center; /* Center the search bar */
+            padding: 10px 0; /* Padding around the search bar */
+        }
+
+        /* Style for the input field */
+        .search-container input[type="text"] {
+            width: 60%; /* Adjust width of the input field */
+            padding: 10px; /* Add some padding inside the search box */
+            font-size: 14px; /* Font size of the input text */
+            border: 2px solid #ccc; /* Border color and thickness */
+            border-radius: 5px; /* Rounded corners */
+            outline: none; /* Remove outline when focused */
+            transition: border-color 0.3s; /* Smooth transition for border color */
+        }
+
+        /* Style for input field on focus */
+        .search-container input[type="text"]:focus {
+            border-color: rgb(27, 184, 174); /* Change border color when focused */
+        }
+
+        /* Placeholder text styling */
+        .search-container input[type="text"]::placeholder {
+            color: #888; /* Lighter color for placeholder text */
+            font-style: italic; /* Italicize placeholder text */
+        }
+
+        .body-top {
+            text-align: center;
+
+            position: fixed;
+            top: 30px; /* Height to accommodate h1 */
+            left: 0;
+            width: 100%;
+            background-color: #fff;
+            z-index: 9;
+            padding: 5px 0; /* Padding around buttons */
+            /* border-bottom: 1px solid #ddd; */
+        }
+
+        a {
+            display: block;
+            text-align: center;
+            text-decoration: none;
+            color: #007BFF;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        #top-link {
+            margin-top: 5px;
+            font-size: 14px;
+        }
+
+        .table-wrapper {
+            display: flex; /* Make it a flex container */
+            flex-direction: column; /* Arrange items vertically */
+            margin-top: 10px; /* Space between the search bar and the table */
+            max-height: 70vh; /* Adjust the height to be 50% of the viewport */
+            overflow-y: auto; /* Allow vertical scrolling if content overflows */
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            table-layout: fixed;
+            margin: 0px;
+        }
+        
+        th, td {
+            padding: 12px;
+            text-align: left;
+            /* border: 2px solid #ddd; */
+        }
+
+        th {
+            background-color: #f2f2f2;
+            cursor: pointer;
+            position: relative;
+
+            position: sticky;
+            top: 0;
+            z-index: 3;
+            
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        tr:nth-child(odd) {
+            background-color: #ffffff;
+        }
+
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        .sort-icon {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 16px;
+            color: #000;
+        }
+
+        button {
+            text-align: center;
+            padding: 6px 12px;
+            margin: 5px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 10px;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        form {
+            display: inline;
+        }
+
+        /* Apply fixed table layout to ensure column width is respected */
+        /* table {
+            table-layout: fixed;
+            width: 100%;
+            
+        } */
+    
+        th:nth-child(1), td:nth-child(1) {
+            width: 50px; /* ID column */
+            text-align: center; /* Center the text */
+
+            position: sticky;
+            left: 0px;
+            background-color: #f2f2f2; /* Matches header background */
+            z-index: 4;
+
+        }
+
+        th:nth-child(2), td:nth-child(2) {
+            width: 150px; /* Action column */
+            text-align: center; /* Center the text */
+
+        }
+
+        th:nth-child(3), td:nth-child(3) {
+            width: 250px; /* Info column */
+            text-align: center; /* Center the text */
+
+            word-wrap: break-word; /* Ensure long URLs break and wrap */
+            overflow-wrap: break-word; /* For browsers that don't support word-wrap */
+        }
+
+        th:nth-child(4), td:nth-child(4) {
+            width: 90px; /* Start time column */
+            text-align: center; /* Center the text */
+        }
+
+        th:nth-child(5), td:nth-child(5) {
+            width: 90px;  /* End time column */
+            text-align: center; /* Center the text */
+        
+        }
+
+        th:nth-child(6), td:nth-child(6) {
+            width: 90px; /* Execution column */
+            text-align: center; /* Center the text */
+
+        }
+
+        th:nth-child(7), td:nth-child(7) {
+            width: 80px; /* Status column */
+            text-align: center; /* Center the text */
+        }
+
+        input[type="text"], input[type="number"], input[type="url"] {
+            width: 95%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+    .pagination{
+        margin:10px;
+    }
+
+    .pagination-btn {
+        padding: 10px 15px;
+        text-decoration: none;
+        color: black;
+        background-color: #f8f9fa; /* Light background for normal buttons */
+        border-radius: 5px;
+        font-size: 14px;
+        border: 1px solid #ddd;
+    }
+    .pagination-btn:hover {
+        background-color: #e9ecef; /* Slightly darker on hover */
+    }
+    .pagination-btn.active {
+        background-color: #007bff; /* Blue for the active/current page */
+        color: white;
+        font-weight: bold;
+    }
+    .pagination-btn.disabled {
+        pointer-events: none; /* Disable clicks */
+        background-color: #ccc; /* Light gray for disabled state */
+        color: #666; /* Gray text for disabled state */
+    }
+    .ellipsis {
+        padding: 10px 15px;
+        color: #666;
+        font-size: 14px;
+    }
+
+  /* Define color variables for easier maintenance */
+:root {
+    --primary-color: #007bff;
+    --light-gray: #f3f4f6;
+    --border-color: #e0e0e0;
+    --text-dark: #333;
+    --text-light: #555;
+    --hover-bg: #e0efff; /* Light blue hover background */
+}
+
+/* Main container for the processing section */
+.processing-count {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--light-gray);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 10px 20px;
+    margin: 20px 0;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    font-family: Arial, sans-serif;
+    transition: background-color 0.3s ease; /* Smooth hover effect */
+}
+
+/* Hover effect for the entire block */
+.processing-count:hover {
+    background-color: var(--hover-bg);
+}
+
+/* Icon container styling */
+.processing-icon-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--primary-color);
+    font-size: 24px;
+    margin-right: 15px;
+}
+
+/* Text container for the "Processing" label and count */
+.processing-text-container {
+    display: flex;
+    align-items: center;
+    gap: 8px; /* Slightly smaller gap between h4 and p */
+}
+
+/* Heading styling */
+.processing-text-container h4 {
+    margin: 0;
+    font-size: 18px;
+    color: var(--text-dark);
+}
+
+/* Paragraph styling for the count */
+.processing-text-container p {
+    margin: 0;
+    font-size: 18px; /* Match font size of h4 */
+    color: var(--text-light);
+}
+
+/* Style the link container to prevent underlines */
+.processing-link {
+    text-decoration: none; /* Prevent underline */
+    color: inherit; /* Ensure it inherits color from parent */
+}
+
+/* Remove underline when hovering over the link */
+.processing-link:hover {
+    text-decoration: none; /* Prevent underline on hover */
+}
+
+    </style>
+</head>
+<body>
+
+    <!-- <h1>Log Database</h1> -->
+
+    <!-- Icons section for navigation -->
+    <div class="icons-container">
+        <a href="/ad_search" class="{{ 'active' if request.path == '/ad_search' else '' }}" title="Ad Search">
+            <i class="fa fa-search"></i> Ad Search
+        </a>
+        <a href="/prod_search" class="{{ 'active' if request.path == '/prod_search' else '' }}" title="Product Search">
+            <i class="fa fa-cogs"></i> Product Search
+        </a>
+        <a href="/view_product_data" class="{{ 'active' if request.path == '/view_product_data' else '' }}" title="View Product Data">
+            <i class="fa fa-database"></i> Product Data
+        </a>
+        <a href="/view_page_data" class="{{ 'active' if request.path == '/view_page_data' else '' }}" title="View Page Data">
+            <i class="fa fa-file"></i> Page Data
+        </a>
+        <a href="/view_log_data" class="{{ 'active' if request.path == '/view_log_data' else '' }}" title="View Log Data">
+            <i class="fa fa-list"></i> Log Data
+        </a>
+    </div>
+
+    <!-- the name="search" is your get request -->
+    <div class="search-container">
+        <form method="get" action="/view_log_data">
+            <input 
+                type="text" 
+                name="search" 
+                id="searchInput" 
+                value="{{ search_query }}" 
+                placeholder="Search ..."
+            >
+            <button type="submit">Search</button>
+
+            <div>Found {{ total_count }} matching results</div>
+        </form>
+    </div>
+
+    {% if processing_count > 0 %}
+        <a href="/view_log_data?search=processing" class="processing-link">
+            <div class="processing-count">
+                <div class="processing-icon-container">
+                    <i class="fas fa-spinner"></i> <!-- FontAwesome spinner icon -->
+                </div>
+                <div class="processing-text-container">
+                    <h4>Processing:</h4>
+                    <p>{{ processing_count }}</p>
+                </div>
+            </div>
+        </a>
+    {% endif %}
+
+
+    <!-- <div class="body-top"> 
+
+        <form action="/view_log_data" method="GET" >
+            <button style="background-color: rgb(27, 184, 174); border: none; cursor: pointer;" type="submit">
+                <i class="fa fa-refresh"></i>
+            </button>
+        </form>
+
+    </div> -->
+
+    <div class="table-wrapper">
+        <table id="dataTable">
+        <thead>
+            <tr>
+                <th style="z-index: 5" >ID </th>
+                <th>Action </th>
+                <th>Info</th>
+                <th>Start Time </th>
+                <th>End Time </th>
+                <th>Execution Time</th>
+                <th>Status </th>
+            </tr>
+        </thead>
+        <tbody id="dataTable">
+            {% for data in all_data %}
+            <tr>
+                <td>{{ data.id }}</td>
+                <td>{{ data.action }}</td>
+                <td>{{ data.info }}</td>
+                <td>{{ data.start_time }}</td>
+                <td>{{ data.end_time }}</td>
+                <td>{{ data.execution_time }}</td>
+                <td style="color: 
+                    {% if 'ERROR' in data.status %}
+                        red
+                    {% elif 'PROCESSING' in data.status %}
+                        blue
+                    {% elif 'SUCCESS' in data.status %}
+                        green
+                    {% else %}
+                        black
+                    {% endif %}
+                ;">
+                    {{ data.status }}
+                </td>
+
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+
+
+<!-- Pagination Controls -->
+<div class="pagination" style="display: flex; gap: 10px; justify-content: center; align-items: center;">
+    <!-- Previous Button -->
+    <a href="/view_log_data?page={{ page - 1 }}&search={{ search_query }}" 
+       class="pagination-btn {{ 'disabled' if page <= 1 else '' }}" 
+       style="{{ 'pointer-events: none; background-color: #ccc;' if page <= 1 else '' }}">
+        Previous
+    </a>
+
+    <!-- First Page -->
+    <a href="/view_log_data?page=1&search={{ search_query }}" class="pagination-btn {{ 'active' if page == 1 else '' }}">
+        1
+    </a>
+
+    <!-- Ellipsis before current range -->
+    {% if page > 4 %}
+        <span class="ellipsis">...</span>
+    {% endif %}
+
+    <!-- Page Numbers Around Current Page -->
+    {% for p in range(page - 2, page + 3) %}
+        {% if p > 1 and p < total_pages %}
+            <a href="/view_log_data?page={{ p }}&search={{ search_query }}" 
+               class="pagination-btn {{ 'active' if p == page else '' }}" 
+               style="{{ 'background-color: #007bff; color: white;' if p == page else '' }}">
+                {{ p }}
+            </a>
+        {% endif %}
+    {% endfor %}
+
+    <!-- Ellipsis after current range -->
+    {% if page < total_pages - 3 %}
+        <span class="ellipsis">...</span>
+    {% endif %}
+
+    <!-- Last Page (Show this page if you're on the last page or if not already shown) -->
+    {% if total_pages > 1 %}
+        <a href="/view_log_data?page={{ total_pages }}&search={{ search_query }}" 
+           class="pagination-btn {{ 'active' if page == total_pages else '' }}">
+            {{ total_pages }}
+        </a>
+    {% endif %}
+
+    <!-- Next Button -->
+    <a href="/view_log_data?page={{ page + 1 }}&search={{ search_query }}" 
+       class="pagination-btn {{ 'disabled' if page >= total_pages else '' }}" 
+       style="{{ 'pointer-events: none; background-color: #ccc;' if page >= total_pages else '' }}">
+        Next
+    </a>
+</div>
+
+
+
+
+
+</body>
+</html>

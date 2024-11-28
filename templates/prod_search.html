@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <title>Product Search</title>
+    <style>
+        p a {
+            word-break: break-all;
+            overflow-wrap: break-word;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+
+        /* Icons container with centered layout */
+        .icons-container {
+            display: flex;
+            justify-content: center; /* Center the icons horizontally */
+            align-items: center; /* Align items vertically in the center */
+            margin-top: 10px;
+            margin-bottom: 0px; /* Space below the icons section */
+            max-width: 1000px; /* Limit the maximum width of the container */
+            margin-left: auto; /* Center the container horizontally */
+            margin-right: auto; /* Center the container horizontally */
+        }
+
+        .icons-container a {
+            text-decoration: none; /* Remove underline from links */
+            color: #333; /* Default icon color */
+            font-size: 14px; /* Set icon size */
+            text-align: center; /* Align text under the icon */
+            padding: 10px; /* Add some space around the icon */
+            display: inline-block; /* Make links behave like buttons */
+            border-radius: 5px; /* Round corners of the button */
+            transition: background-color 0.3s, color 0.3s; /* Smooth hover transition */
+        }
+
+        .icons-container a:hover {
+            background-color: rgb(27, 184, 174); /* Change background color on hover */
+            color: white; /* Change text color on hover */
+        }
+
+        .icons-container i {
+            font-size: 20px; /* Increase icon size */
+            margin-bottom: 5px; /* Space between icon and text */
+        }
+        
+        /* Style for the active tab */
+        .icons-container a.active {
+            background-color: rgb(27, 184, 174); /* Background color for active tab */
+            color: white; /* White text for the active tab */
+            border-radius: 5px; /* Round corners for the active tab */
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 2em;
+        }
+
+        form {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        form div {
+            margin-bottom: 15px;
+        }
+
+        input[type="text"],
+        button {
+            padding: 10px;
+            width: 100%;
+            max-width: 300px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 10px;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        h2 {
+            text-align: center;
+            color: #4CAF50;
+        }
+
+        #loadingMessage {
+            display: none;
+            text-align: center;
+            font-size: 20px;
+            color: #4CAF50;
+            margin-top: 20px;
+        }
+
+        #result {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        p {
+            font-size: 16px;
+        }
+
+        .status-message {
+            display: inline-block;  /* Makes the background fit the text */
+            padding: 5px 10px;      /* Add padding around the text */
+            border-radius: 5px;     /* Round the corners */
+        }
+
+        .status-success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .status-error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .status-info {
+            background-color: #cce5ff;
+            color: #004085;
+        }
+
+        /* Responsive styling for smaller screens */
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 1.5em;
+            }
+
+            input[type="text"],
+            button {
+                font-size: 14px;
+                padding: 8px;
+            }
+
+            h2 {
+                font-size: 18px;
+            }
+
+            h3 {
+                font-size: 14px;
+            }
+
+            p {
+                font-size: 14px;
+            }
+
+            .status-message {
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- <h1>Product Tracker</h1> -->
+
+    <!-- Icons section for navigation -->
+    <div class="icons-container">
+        <a href="/ad_search" class="{{ 'active' if request.path == '/ad_search' else '' }}" title="Ad Search">
+            <i class="fa fa-search"></i> Ad Search
+        </a>
+        <a href="/prod_search" class="{{ 'active' if request.path == '/prod_search' else '' }}" title="Product Search">
+            <i class="fa fa-cogs"></i> Product Search
+        </a>
+        <a href="/view_product_data" class="{{ 'active' if request.path == '/view_product_data' else '' }}" title="View Product Data">
+            <i class="fa fa-database"></i> Product Data
+        </a>
+        <a href="/view_page_data" class="{{ 'active' if request.path == '/view_page_data' else '' }}" title="View Page Data">
+            <i class="fa fa-file"></i> Page Data
+        </a>
+        <a href="/view_log_data" class="{{ 'active' if request.path == '/view_log_data' else '' }}" title="View Log Data">
+            <i class="fa fa-list"></i> Log Data
+        </a>
+    </div>
+
+    <div id="loadingMessage">Loading...</div>
+
+    <form method="POST" id="urlForm">
+        <div>
+            <input type="text" id="url" name="url" placeholder="Enter URL here" required>
+        </div>
+        <div>
+            <button type="submit">Extract Results</button>
+        </div>
+    </form>
+
+    <div id="result">
+        {% if status %}
+            <h2>Meta Result(s): 
+                {% if data.result_count %}
+                    {{ data.result_count }} Active Ad(s)
+                {% else %}
+                    No data
+                {% endif %}
+            </h2>
+            <p><strong>Execution time: </strong>{{ data.time_taken or 'No data'}}</p>
+            <p><strong>Product Name: </strong>{{ data.product_name or 'No data' }}</p>
+            <p><strong>URL: </strong><a href="{{ data.url or 'No data' }}" target="_blank">{{ data.url or 'No data' }}</a></p>
+            <p><strong>Ads Library URL: </strong><a href="{{ data.ads_library_url }}" target="_blank">{{ 'Link' if data.ads_library_url else 'No data' }}</a></p>
+            <p><strong>Product Added On: </strong>{{ data.created_at_date or 'No data' }} {% if data.created_at_date %} ({{ data.created_days_ago }} days ago){% endif %}</p>
+            <p><strong>WHOIS URL: </strong><a href="{{ data.whois_url }}" target="_blank">Link</a></p>
+            <p><strong>Domain Registered On: </strong>{{ data.registration_date or 'No data' }} {% if data.registration_date %} ({{ data.registration_days_ago }} days ago){% endif %}</p>
+            
+            <!-- Status message styled based on the status -->
+            <div class="status-message 
+                {% if status %}
+                    {% if 'success' in status|lower %}
+                        status-success
+                    {% elif 'error' in status|lower %}
+                        status-error
+                    {% else %}
+                        status-info
+                    {% endif %}
+                {% else %}
+                    status-info
+                {% endif %}
+            ">
+                <strong>Status: </strong>{{ status }}
+            </div>
+
+        {% else %}
+            <!-- No result is available yet, show placeholders -->
+            <h2>Meta Result(s):  No data</h2>
+            <p><strong>Execution time: </strong>No data</p>
+            <p><strong>Product Name: </strong>No data</p>
+            <p><strong>URL: </strong>No data</p>
+            <p><strong>Ads Library URL: </strong>No data</p>
+            <p><strong>Product Added On: </strong>No data</p>
+            <p><strong>WHOIS URL: </strong>No data</p>
+            <p><strong>Domain Registered On: </strong>No data</p>
+            <div class="status-message status-info">
+                <strong>Status: </strong>No data
+            </div>
+        {% endif %}
+
+        <a style="display: block; margin-top: 30px;" href="/view_product_data">Product Tracker Database</a>
+        <a style="display: block; margin-top: 30px;" href="/view_page_data">Page Tracker Database</a>
+        <a style="display: block; margin-top: 30px;" href="/ad_search">Ad Search</a>
+
+    </div>
+
+    <script>
+        const form = document.getElementById('urlForm');
+        const loadingMessage = document.getElementById('loadingMessage');
+        const resultDiv = document.getElementById('result');
+
+        form.addEventListener('submit', function(event) {
+            // Show loading message and hide the form button
+            loadingMessage.style.display = 'block';
+            form.querySelector('button').disabled = true;
+
+            // Initially clear the result fields before showing loading
+            resultDiv.innerHTML = `
+                <h2>Meta Result(s):  No data</h2>
+                <p><strong>Execution time: </strong>No data</p>
+                <p><strong>Product Name: </strong>No data</p>
+                <p><strong>URL: </strong>No data</p>
+                <p><strong>Ads Library URL: </strong>No data</p>
+                <p><strong>Product Added On: </strong>No data</p>
+                <p><strong>WHOIS URL: </strong>No data</p>
+                <p><strong>Domain Registered On: </strong>No data</p>
+                <div class="status-message status-info">
+                    <strong>Status: </strong>No data
+                </div>
+            `;
+        });
+    </script>
+</body>
+</html>

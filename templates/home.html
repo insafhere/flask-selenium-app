@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 1fr; /* means 2 columns */
+            gap: 20px 40px; /* Adjust gap between rows and columns */
+            text-align: center;
+        }
+        .btn-custom {
+            width: 150px;
+            height: 150px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-size: 16px;
+            border-radius: 15px;
+            text-decoration: none;
+            color: white;
+            background-color: #007bff;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .btn-custom:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        .btn-custom i {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+        .btn-primary {
+            background-color: #007bff;
+        }
+        .btn-secondary {
+            background-color: #6c757d;
+        }
+        .btn-success {
+            background-color: #28a745;
+        }
+        .btn-danger {
+            background-color: #dc3545;
+        }
+        .btn-warning {
+            background-color: #ffc107;
+            color: black;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/ad_search" class="btn-custom btn-primary">
+            <i class="fas fa-search"></i>
+            AD SEARCH
+        </a>
+        <a href="/prod_search" class="btn-custom btn-secondary">
+            <i class="fas fa-box"></i>
+            PROD SEARCH
+        </a>
+        <a href="/view_page_data" class="btn-custom btn-success">
+            <i class="fas fa-file-alt"></i>
+            PAGE DATA
+        </a>
+        <a href="/view_product_data" class="btn-custom btn-danger">
+            <i class="fas fa-database"></i>
+            PRODUCT DATA
+        </a>
+        <a href="/view_log_data" class="btn-custom btn-warning">
+            <i class="fas fa-clipboard-list"></i>
+            LOG DATA
+        </a>
+    </div>
+</body>
+</html>

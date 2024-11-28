@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <title>Database</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        h1 {
+            text-align: center;
+
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background-color: #fff;
+            z-index: 10;
+            margin: 0;
+            padding: 5px 0;
+            font-size: 1.5em;
+
+        }
+
+        /* Icons container with centered layout */
+        .icons-container {
+            display: flex;
+            justify-content: center; /* Center the icons horizontally */
+            align-items: center; /* Align items vertically in the center */
+            margin-top: 10px;
+            margin-bottom: 0px; /* Space below the icons section */
+            max-width: 1000px; /* Limit the maximum width of the container */
+            margin-left: auto; /* Center the container horizontally */
+            margin-right: auto; /* Center the container horizontally */
+        }
+
+        .icons-container a {
+            text-decoration: none; /* Remove underline from links */
+            color: #333; /* Default icon color */
+            font-size: 14px; /* Set icon size */
+            text-align: center; /* Align text under the icon */
+            padding: 10px; /* Add some space around the icon */
+            display: inline-block; /* Make links behave like buttons */
+            border-radius: 5px; /* Round corners of the button */
+            transition: background-color 0.3s, color 0.3s; /* Smooth hover transition */
+        }
+
+        .icons-container a:hover {
+            background-color: rgb(27, 184, 174); /* Change background color on hover */
+            color: white; /* Change text color on hover */
+        }
+
+        .icons-container i {
+            font-size: 20px; /* Increase icon size */
+            margin-bottom: 5px; /* Space between icon and text */
+        }
+        
+        /* Style for the active tab */
+        .icons-container a.active {
+            background-color: rgb(27, 184, 174); /* Background color for active tab */
+            color: white; /* White text for the active tab */
+            border-radius: 5px; /* Round corners for the active tab */
+        }
+
+        /* Container for search bar */
+        .search-container {
+            margin: 0px;
+            text-align: center; /* Center the search bar */
+            padding: 5px 0; /* Padding around the search bar */
+        }
+
+        /* Style for the input field */
+        .search-container input[type="text"] {
+            width: 80%; /* Adjust width of the input field */
+            max-width: 500px;
+            padding: 10px; /* Add some padding inside the search box */
+            font-size: 14px; /* Font size of the input text */
+            border: 2px solid #ccc; /* Border color and thickness */
+            border-radius: 5px; /* Rounded corners */
+            outline: none; /* Remove outline when focused */
+            transition: border-color 0.3s; /* Smooth transition for border color */
+        }
+
+        /* Style for input field on focus */
+        .search-container input[type="text"]:focus {
+            border-color: rgb(27, 184, 174); /* Change border color when focused */
+        }
+
+        /* Placeholder text styling */
+        .search-container input[type="text"]::placeholder {
+            color: #888; /* Lighter color for placeholder text */
+            font-style: italic; /* Italicize placeholder text */
+        }
+
+        .body-top {
+            text-align: center;
+
+            position: fixed;
+            top: 30px; /* Height to accommodate h1 */
+            left: 0;
+            width: 100%;
+            background-color: #fff;
+            z-index: 9;
+            padding: 5px 0; /* Padding around buttons */
+            /* border-bottom: 1px solid #ddd; */
+        }
+
+        a {
+            display: block;
+            text-align: center;
+            text-decoration: none;
+            color: #007BFF;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        #top-link {
+            margin-top: 5px;
+            font-size: 14px;
+        }
+
+        /* .search-container {
+            margin:0px;
+
+        }
+
+        #searchInput {
+            width: 400px; 
+            padding: 7px; 
+            border-radius: 4px; 
+            border: 1px solid #ddd;
+        }
+
+        #searchInput::placeholder {
+            color: #999; 
+            font-size: 14px; 
+            font-style: italic; 
+        } */
+
+        .table-wrapper {
+            display: flex; /* Make it a flex container */
+            flex-direction: column; /* Arrange items vertically */
+            margin-top: 10px; /* Space between the search bar and the table */
+            max-height: 70vh; /* Adjust the height to be 50% of the viewport */
+            overflow-y: auto; /* Allow vertical scrolling if content overflows */
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            table-layout: fixed;
+            margin: 0px;
+        }
+        
+        th, td {
+            padding: 12px;
+            text-align: left;
+            /* border: 2px solid #ddd; */
+        }
+
+        th {
+            background-color: #f2f2f2;
+            cursor: pointer;
+            position: relative;
+
+            position: sticky;
+            top: 0;
+            z-index: 3;
+            
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        tr:nth-child(odd) {
+            background-color: #ffffff;
+        }
+
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        .sort-icon {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 16px;
+            color: #000;
+        }
+
+        button {
+            text-align: center;
+            padding: 6px 12px;
+            margin: 5px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 10px;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        form {
+            display: inline;
+        }
+
+
+
+        /* Apply fixed table layout to ensure column width is respected */
+        /* table {
+            table-layout: fixed;
+            width: 100%;
+            
+        } */
+    
+
+        th:nth-child(1), td:nth-child(1) {
+            width: 50px; /* ID column */
+            text-align: center; /* Center the text */
+
+
+            position: sticky;
+            left: 0px;
+            background-color: #f2f2f2; /* Matches header background */
+            z-index: 4;
+            
+            
+        }
+
+        th:nth-child(2), td:nth-child(2) {
+            width: 150px; /* Product Name column */
+            text-align: center; /* Center the text */
+
+            position: sticky;
+            left: 70px;
+            background-color: #f2f2f2; /* Matches header background */
+            z-index: 4;
+        }
+
+        th:nth-child(3), td:nth-child(3) {
+            width: 200px; /* URL column */
+            text-align: center; /* Center the text */
+            word-wrap: break-word; /* Ensure long URLs break and wrap */
+            overflow-wrap: break-word; /* For browsers that don't support word-wrap */
+        }
+
+        th:nth-child(4), td:nth-child(4) {
+            width: 100px; /* Created At column */
+            text-align: center; /* Center the text */
+        }
+
+        th:nth-child(5), td:nth-child(5) {
+            width: 60px; /* Created Days Ago column */
+            text-align: center; /* Center the text */
+        
+            position: sticky;
+            left: 240px;
+            background-color: #f2f2f2; /* Matches header background */
+            z-index: 4;
+        
+        }
+
+        th:nth-child(6), td:nth-child(6) {
+            width: 100px; /* WHOIS URL column */
+            text-align: center; /* Center the text */
+            word-wrap: break-word; /* Ensure long URLs break and wrap */
+            overflow-wrap: break-word; /* For browsers that don't support word-wrap */
+        }
+
+        th:nth-child(7), td:nth-child(7) {
+            width: 100px; /* Registration Date column */
+            text-align: center; /* Center the text */
+        }
+
+        th:nth-child(8), td:nth-child(8) {
+            width: 90px; /* Registration Days Ago column */
+            text-align: center; /* Center the text */
+        }
+
+        th:nth-child(9), td:nth-child(9) {
+            width: 300px; /* Ads Library URL column */
+            text-align: center; /* Center the text */
+            word-wrap: break-word; /* Ensure long URLs break and wrap */
+            overflow-wrap: break-word; /* For browsers that don't support word-wrap */
+        }
+
+        th:nth-child(10), td:nth-child(10) {
+            width: 50px; /* Result Count column */
+            text-align: center; /* Center the text */
+        }
+
+        th:nth-child(11), td:nth-child(11) {
+            width: 150px; /* Result Count History column */
+            text-align: center; /* Center the text */
+            word-wrap: break-word; /* Ensure long URLs break and wrap */
+            overflow-wrap: break-word; /* For browsers that don't support word-wrap */
+        }
+
+        th:nth-child(12), td:nth-child(12) {
+            width: 100px; /* Added Date column */
+            text-align: center; /* Center the text */
+        }
+
+        th:nth-child(13), td:nth-child(13) {
+            width: 50px; /* Added Days Ago column */
+            text-align: center; /* Center the text */
+        }
+
+        th:nth-child(14), td:nth-child(14) {
+            width: 70px; /* Count Difference column */
+            text-align: center; /* Center the text */
+        }
+
+        th:nth-child(15), td:nth-child(15) {
+            width: 120px; /* Action column */
+            text-align: center; /* Center the text */
+        }
+
+        /* Modal and form styles */
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed;
+            z-index: 100;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgb(0, 0, 0);
+            background-color: rgba(0, 0, 0, 0.4); /* Black with opacity */
+            padding-top: 60px;
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 20px;
+            padding-left: 60px;
+            padding-right: 60px;
+            margin-bottom: 100px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 600px;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        input[type="text"], input[type="number"], input[type="url"] {
+            width: 95%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        
+    </style>
+</head>
+<body>
+
+    <!-- <h1>Product Tracker Database</h1> -->
+
+    <!-- Icons section for navigation -->
+    <div class="icons-container">
+        <a href="/ad_search" class="{{ 'active' if request.path == '/ad_search' else '' }}" title="Ad Search">
+            <i class="fa fa-search"></i> Ad Search
+        </a>
+        <a href="/prod_search" class="{{ 'active' if request.path == '/prod_search' else '' }}" title="Product Search">
+            <i class="fa fa-cogs"></i> Product Search
+        </a>
+        <a href="/view_product_data" class="{{ 'active' if request.path == '/view_product_data' else '' }}" title="View Product Data">
+            <i class="fa fa-database"></i> Product Data
+        </a>
+        <a href="/view_page_data" class="{{ 'active' if request.path == '/view_page_data' else '' }}" title="View Page Data">
+            <i class="fa fa-file"></i> Page Data
+        </a>
+        <a href="/view_log_data" class="{{ 'active' if request.path == '/view_log_data' else '' }}" title="View Log Data">
+            <i class="fa fa-list"></i> Log Data
+        </a>
+    </div>
+
+    <div class="search-container">
+        <input type="text" id="searchInput" onkeyup="searchTable()" placeholder="Search ..." >
+    </div>
+
+    <!-- <div class="body-top" > 
+        <form action="/view_product_data" method="GET" >
+            <button style="background-color: rgb(27, 184, 174); border: none; cursor: pointer;" type="submit">
+                <i class="fa fa-refresh"></i>
+            </button>
+        </form>
+
+        <form action="/update_all_product_count/45" method="POST">
+            <button type="submit" onclick="return confirm('Are you sure you want to update <=45 days ago data?');">Update Count</button>
+        </form>
+
+        <form action="/update_product_days_ago" method="POST">
+            <button style="background-color: blue"  type="submit" >Update Days</button>
+        </form>
+
+        <form action="/view_product_data/45" method="GET" >
+            <button style="background-color: orangered" type="submit" >45 Days Data</button>
+        </form>
+
+        <form action="/" method="GET" >
+            <button style="background-color: rgb(16, 16, 16)" type="submit" >
+                <i class="fas fa-search"></i>
+            </button>
+        </form>
+
+        <div class="search-container">
+            <input type="text" id="searchInput" onkeyup="searchTable()" placeholder="Search for products..." >
+        </div>
+    </div> -->
+
+    <div class="table-wrapper">
+        <table id="dataTable">
+        <thead>
+            <tr>
+                <th style="z-index: 5" onclick="sortTable(0)">ID <span class="sort-icon" id="sort-icon-0"></span></th>
+                <th style="z-index: 5" onclick="sortTable(1)">Product Name <span class="sort-icon" id="sort-icon-1"></span></th>
+                <th onclick="sortTable(2)">URL <span class="sort-icon" id="sort-icon-2"></span></th>
+                <th onclick="sortTable(3)">Created At <span class="sort-icon" id="sort-icon-3"></span></th>
+                <th style="z-index: 5" onclick="sortTable(4)">Created Days Ago <span class="sort-icon" id="sort-icon-4"></span></th>
+                <th onclick="sortTable(5)">WHOIS URL <span class="sort-icon" id="sort-icon-5"></span></th>
+                <th onclick="sortTable(6)">Registration Date <span class="sort-icon" id="sort-icon-6"></span></th>
+                <th onclick="sortTable(7)">Registration Days Ago <span class="sort-icon" id="sort-icon-7"></span></th>
+                <th onclick="sortTable(8)">Ads Library URL <span class="sort-icon" id="sort-icon-8"></span></th>
+                <th onclick="sortTable(9)">Result Count <span class="sort-icon" id="sort-icon-9"></span></th>
+                <th onclick="sortTable(10)">Result Count History <span class="sort-icon" id="sort-icon-10"></span></th>
+                <th onclick="sortTable(11)">Track Date <span class="sort-icon" id="sort-icon-11"></span></th>
+                <th onclick="sortTable(12)">Track Days Ago <span class="sort-icon" id="sort-icon-12"></span></th>
+                <th onclick="sortTable(13)">Count Difference <span class="sort-icon" id="sort-icon-13"></span></th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody id="dataTable">
+            {% for data in all_data %}
+            <tr>
+                <td>{{ data.id }}</td>
+                <td>{{ data.product_name }}</td>
+                <td><a href="{{ data.url }}" target="_blank">{{ data.url }}</a></td>
+                <td>{{ data.created_at_date }}</td>
+                <td>{{ data.created_days_ago }}</td>
+                <td><a href="{{ data.whois_url }}" target="_blank">{{ data.whois_url }}</a></td>
+                <td>{{ data.registration_date }}</td>
+                <td>{{ data.registration_days_ago }}</td>
+                <td><a href="{{ data.ads_library_url }}" target="_blank">{{ data.ads_library_url }}</a></td>
+                <td>{{ data.result_count }}</td>
+                <td>{{ data.result_count_history }}</td>
+                <td>{{ data.added_date }}</td>
+                <td>{{ data.added_days_ago }}</td>
+                
+                <td>
+                    {% if data.count_difference > 0 %}
+                        <span style="color: green; font-size: 1.2em;">&#x2B06; {{ data.count_difference }}</span> <!-- Up Arrow -->
+                    {% elif data.count_difference < 0 %}
+                        <span style="color: red; font-size: 1.2em;">&#x2B07; {{ data.count_difference }}</span> <!-- Down Arrow -->
+                    {% else %}
+                        <span style="color: gray;">0</span> <!-- Neutral case -->
+                    {% endif %}
+                </td>             
+
+                <td >
+                    <div>
+                        <!-- Action buttons for each row -->
+                        <form action="/update_product_count/{{ data.id }}" method="POST">
+                            <button type="submit">Update</button>
+                        </form>
+                        
+                        <form action="/delete_product_data/{{ data.id }}" method="POST">
+                            <button style="background-color: rgb(255, 83, 83)" type="submit" onclick="return confirm('Are you sure you want to delete this data?');">Delete</button>
+                        </form>
+
+                        <!-- <form action="/modify/{{ data.id }}" method="POST">
+                            <button type="submit">Custom Modify</button>
+                        </form> -->
+                        
+                        <button style="background-color: rgb(117, 117, 231)" onclick="openEditModal('{{ data.id }}', '{{ data.product_name }}', '{{ data.url }}', '{{ data.created_at_date }}', '{{ data.whois_url }}', '{{ data.registration_date }}', '{{ data.ads_library_url }}', '{{ data.result_count }}', '{{ data.result_count_history }}', '{{ data.added_date }}', '{{ data.count_difference}}')">Edit</button>
+
+
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+
+    <!-- Modal for editing data -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeEditModal()">&times;</span>
+            <h2>Edit Data</h2>
+            <form id="editForm" action="/edit_product_data" method="POST">
+                <input type="hidden" id="editId" name="id">
+                <label for="product_name">Product Name:</label>
+                <input type="text" id="product_name" name="product_name">
+                <label for="url">URL:</label>
+                <input type="url" id="url" name="url">
+                <label for="created_at_date">Created At:</label>
+                <input type="text" id="created_at_date" name="created_at_date">
+                <label for="whois_url">WHOIS URL:</label>
+                <input type="url" id="whois_url" name="whois_url">
+                <label for="registration_date">Registration Date:</label>
+                <input type="text" id="registration_date" name="registration_date">
+                <label for="ads_library_url">Ads Library URL:</label>
+                <input type="url" id="ads_library_url" name="ads_library_url">
+                <label for="result_count">Result Count:</label>
+                <input type="number" id="result_count" name="result_count">
+                <label for="result_count_history">Result Count History:</label>
+                <input type="text" id="result_count_history" name="result_count_history">
+                <label for="count_difference">Count Difference:</label>
+                <input type="number" id="count_difference" name="count_difference">
+                <label for="added_date">Added Date:</label>
+                <input type="text" id="added_date" name="added_date">
+                <button type="submit">Save Changes</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Open the edit modal and fill the form with the data
+        function openEditModal(id, product_name, url, created_at_date, whois_url, registration_date, ads_library_url, result_count, result_count_history, added_date, count_difference) {
+            document.getElementById('editId').value = id;
+            document.getElementById('product_name').value = product_name;
+            document.getElementById('url').value = url;
+            document.getElementById('created_at_date').value = created_at_date;
+            document.getElementById('whois_url').value = whois_url;
+            document.getElementById('registration_date').value = registration_date;
+            document.getElementById('ads_library_url').value = ads_library_url;
+            document.getElementById('result_count').value = result_count;
+            document.getElementById('result_count_history').value = result_count_history;
+            document.getElementById('count_difference').value = count_difference;
+            document.getElementById('added_date').value = added_date;
+            document.getElementById('editModal').style.display = "block";
+        }
+
+        // Close the edit modal
+        function closeEditModal() {
+            document.getElementById('editModal').style.display = "none";
+        }
+
+        // Close the modal when clicked outside of the modal content
+        window.onclick = function(event) {
+            if (event.target == document.getElementById('editModal')) {
+                closeEditModal();
+            }
+        }
+    </script>
+    
+
+    <script>
+        let currentSortColumn = -1;
+        let currentSortDirection = 'asc'; // Default to ascending sort
+    
+        function sortTable(columnIndex) {
+            const table = document.getElementById('dataTable');
+            const rows = Array.from(table.rows).slice(1); // Get all rows except the header
+            const isNumericColumn = [0, 4, 7, 9, 12, 13].includes(columnIndex); // Days ago, Result Count, etc.
+            const isDateColumn = [3, 6, 11].includes(columnIndex); // Date columns
+    
+            if (currentSortColumn === columnIndex) {
+                // Toggle the sort direction if the same column is clicked
+                currentSortDirection = (currentSortDirection === 'asc') ? 'desc' : 'asc';
+            } else {
+                // Default to ascending sort for new columns
+                currentSortDirection = 'asc';
+            }
+    
+            // Clear all icons before updating the current one
+            const icons = document.querySelectorAll('.sort-icon');
+            icons.forEach(icon => icon.textContent = '');
+    
+            const currentIcon = document.getElementById('sort-icon-' + columnIndex);
+    
+            rows.sort((rowA, rowB) => {
+                const cellA = rowA.cells[columnIndex].innerText.trim();
+                const cellB = rowB.cells[columnIndex].innerText.trim();
+    
+                let comparison = 0;
+    
+                if (isNumericColumn) {
+                    const valueA = extractNumericValue(rowA.cells[columnIndex]);
+                    const valueB = extractNumericValue(rowB.cells[columnIndex]);
+                    comparison = valueA - valueB;
+                } else if (isDateColumn) {
+                    const dateA = new Date(cellA);
+                    const dateB = new Date(cellB);
+                    comparison = dateA - dateB;
+                } else {
+                    comparison = cellA.localeCompare(cellB);
+                }
+    
+                return currentSortDirection === 'asc' ? comparison : -comparison;
+            });
+    
+            rows.forEach(row => table.appendChild(row));
+    
+            // Update the sort icon
+            currentIcon.textContent = currentSortDirection === 'asc' ? '▲' : '▼';
+            currentSortColumn = columnIndex;
+        }
+    
+        // Function to extract numeric value from cells with icons or other formatting
+        function extractNumericValue(cell) {
+            const text = cell.innerText.trim(); // Get text content
+            const numberMatch = text.match(/-?\d+/); // Match numeric value
+            return numberMatch ? parseInt(numberMatch[0]) : 0; // Default to 0 if no number is found
+        }
+    </script>
+    
+
+<script>
+    // Loop through all rows in the table and apply the conditional color to 'Result Count' cells
+    document.querySelectorAll("#dataTable tbody tr").forEach(row => {
+        // Select the Result Count cell (10th cell in each row)
+        const resultCountCell = row.cells[9];
+        const resultCount = parseInt(resultCountCell.textContent, 10);
+
+        // Check if the count is above 30 and apply green background if true
+        if (resultCount >= 20) {
+            resultCountCell.style.backgroundColor = "#78b97a";
+            resultCountCell.style.color = "white"; // Optional: change text color for better contrast
+        }
+    });
+</script>
+
+<script>
+
+    function searchTable() {
+        const input = document.getElementById("searchInput");
+        const filter = input.value.toLowerCase();
+        const table = document.getElementById("dataTable");
+        const rows = table.getElementsByTagName("tr");
+
+        for (let i = 1; i < rows.length; i++) {  // Skip the header row
+            const cells = rows[i].getElementsByTagName("td");
+            let match = false;
+            
+            for (let j = 0; j < cells.length; j++) {
+                if (cells[j]) {
+                    if (cells[j].textContent.toLowerCase().indexOf(filter) > -1) {
+                        match = true;
+                        break;  // Stop once a match is found in any column
+                    }
+                }
+            }
+            
+            if (match) {
+                rows[i].style.display = "";
+            } else {
+                rows[i].style.display = "none";  // Hide row if no match is found
+            }
+        }
+    }
+
+</script>
+
+
+
+
+</body>
+</html>

@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <title>Ad Search</title>
+    <style>
+
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        /* Icons container with centered layout */
+        .icons-container {
+            display: flex;
+            justify-content: center; /* Center the icons horizontally */
+            align-items: center; /* Align items vertically in the center */
+            margin-top: 10px;
+            margin-bottom: 0px; /* Space below the icons section */
+            max-width: 1000px; /* Limit the maximum width of the container */
+            margin-left: auto; /* Center the container horizontally */
+            margin-right: auto; /* Center the container horizontally */
+        }
+
+        .icons-container a {
+            text-decoration: none; /* Remove underline from links */
+            color: #333; /* Default icon color */
+            font-size: 14px; /* Set icon size */
+            text-align: center; /* Align text under the icon */
+            padding: 10px; /* Add some space around the icon */
+            display: inline-block; /* Make links behave like buttons */
+            border-radius: 5px; /* Round corners of the button */
+            transition: background-color 0.3s, color 0.3s; /* Smooth hover transition */
+        }
+
+        .icons-container a:hover {
+            background-color: rgb(27, 184, 174); /* Change background color on hover */
+            color: white; /* Change text color on hover */
+        }
+
+        .icons-container i {
+            font-size: 20px; /* Increase icon size */
+            margin-bottom: 5px; /* Space between icon and text */
+        }
+        
+        /* Style for the active tab */
+        .icons-container a.active {
+            background-color: rgb(27, 184, 174); /* Background color for active tab */
+            color: white; /* White text for the active tab */
+            border-radius: 5px; /* Round corners for the active tab */
+        }
+
+        
+        .form-container {
+            margin: 20px auto;
+            max-width: 400px;
+            background-color: #ffffff;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        input[type="text"] {
+            width: calc(100% - 20px);
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        button.primary-button {
+            background-color: #28a745;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            padding: 12px 20px;
+            margin: 10px 0;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        button.primary-button:hover {
+            background-color: #135e25;
+        }
+
+        button.secondary-button {
+            background-color: #3b62ff;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            padding: 12px 20px;
+            margin: 10px 0;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        button.secondary-button:hover {
+            background-color: #0033ff;
+        }
+
+        a {
+            display: inline-block;
+            /* margin: 10px; */
+            text-decoration: none;
+            color: #007bff;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+
+        .status-container {
+    margin: 20px;
+    font-family: Arial, sans-serif;
+}
+
+.status-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+.status-table th, .status-table td {
+    padding: 10px;
+    text-align: left;
+    border: 1px solid #ddd;
+}
+
+.status-table th {
+    background-color: #f4f4f4;
+}
+
+.status-table tr:hover {
+    background-color: #f1f1f1;
+}
+
+
+
+    </style>
+</head>
+<body>
+    <!-- Icons section for navigation -->
+    <div class="icons-container">
+        <a href="/ad_search" class="{{ 'active' if request.path == '/ad_search' else '' }}" title="Ad Search">
+            <i class="fa fa-search"></i> Ad Search
+        </a>
+        <a href="/prod_search" class="{{ 'active' if request.path == '/prod_search' else '' }}" title="Product Search">
+            <i class="fa fa-cogs"></i> Product Search
+        </a>
+        <a href="/view_product_data" class="{{ 'active' if request.path == '/view_product_data' else '' }}" title="View Product Data">
+            <i class="fa fa-database"></i> Product Data
+        </a>
+        <a href="/view_page_data" class="{{ 'active' if request.path == '/view_page_data' else '' }}" title="View Page Data">
+            <i class="fa fa-file"></i> Page Data
+        </a>
+        <a href="/view_log_data" class="{{ 'active' if request.path == '/view_log_data' else '' }}" title="View Log Data">
+            <i class="fa fa-list"></i> Log Data
+        </a>
+    </div>
+
+    <div class="form-container">
+        <form method="POST" id="urlForm">
+            <div>
+                <input type="text" id="keyword" name="keyword" placeholder="Enter keyword here">
+            </div>
+    
+            <div>
+                <button type="submit" class="primary-button" title="Search ads for the provided keyword">Execute Search</button>
+            </div>
+        </form>
+        <div id="successMessage" style="display: none; margin-top: 10px; color: green;"></div>
+    </div>
+
+    <div class="form-container">
+        <form method="POST" id="adlibform">
+            <div>
+                <input type="text" id="adliburl" name="adliburl" placeholder="Enter Ad Library URL here">
+            </div>
+    
+            <div>
+                <button type="submit" class="secondary-button" title="Search ads for the provided keyword">Extract Results</button>
+            </div>
+        </form>
+    </div>
+
+    {% if status %}
+    <div class="status-container">
+        <h3>Ad Library Information</h3>
+        <table class="status-table">
+            <thead>
+                <tr>
+                    <th>Product Link</th>
+                    <th>AAs</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for key, value in status.items() %}
+                    <tr>
+                        <td><strong><a href="{{ key }}" target="_blank">{{ key }}</a></strong></td>
+                        <td>{{ value }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endif %}
+    
+    <script>
+        document.getElementById('urlForm').addEventListener('submit', function (event) {
+            const inputField = document.getElementById('keyword');
+            const successMessage = document.getElementById('successMessage');
+    
+            // Get the input value
+            const enteredKeyword = inputField.value.trim();
+    
+            // Display the success message if a keyword is entered
+            if (enteredKeyword) {
+                successMessage.textContent = `Keyword Sent Successfully: "${enteredKeyword}"`;
+                successMessage.style.display = 'block';
+            } else {
+                // Prevent POST if no keyword is entered
+                event.preventDefault(); // Block submission if no keyword
+                successMessage.textContent = 'No keyword entered. Please try again.';
+                successMessage.style.display = 'block';
+                return;
+            }
+    
+            // Allow the form to submit after displaying the success message
+            setTimeout(() => {
+                // Clear the input field and placeholder after POST is triggered
+                inputField.value = '';
+                inputField.placeholder = '';
+            }, 500); // Delay clearing until the form submits
+        });
+    </script>
+    
+    
+
+
+
+</body>
+</html>
