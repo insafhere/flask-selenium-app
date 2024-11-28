@@ -1,5 +1,6 @@
 from operator import or_
 import os
+import platform
 import random
 import threading
 import requests
@@ -116,7 +117,6 @@ class LogData(db.Model):
 # Initialize the database
 with app.app_context():
     db.create_all()
-
 def initialize_driver():
     # Automatically download and install the correct version of chromedriver
     chromedriver_autoinstaller.install()
@@ -137,12 +137,19 @@ def initialize_driver():
         options.binary_location = chrome_bin
         service = Service(chromedriver_autoinstaller.install())
         driver = webdriver.Chrome(service=service, options=options)
-    else:  # Local environment
+
+    elif platform.system() == 'Windows':  # Windows-specific setup
+        # chromedriver_autoinstaller installs the correct version in the system's PATH
+        service = Service(chromedriver_autoinstaller.install())
+        driver = webdriver.Chrome(service=service, options=options)
+
+    else:  # Mac/Linux local environment
         chromedriver_path = '/usr/local/bin/chromedriver'
         service = Service(executable_path=chromedriver_path)
         driver = webdriver.Chrome(service=service, options=options)
 
     return driver
+
 
 # Your existing functions (extract_domain, cleanup_url, etc.)
 
@@ -2256,8 +2263,6 @@ def ads_info(adlib_url):
         print(f"AAs: {value} ({key})")
 
     return product_ads_count
-
-
 
 if __name__ == "__main__":
     # Start the scheduler only if running locally
