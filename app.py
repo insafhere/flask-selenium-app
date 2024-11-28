@@ -31,7 +31,6 @@ import logging
 
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-
 app = Flask(__name__)
 
 # Configure SQLite database
