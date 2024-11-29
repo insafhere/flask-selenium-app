@@ -215,26 +215,15 @@
         }
 
 
-
-        /* Apply fixed table layout to ensure column width is respected */
-        /* table {
-            table-layout: fixed;
-            width: 100%;
-            
-        } */
-    
-
         th:nth-child(1), td:nth-child(1) {
             width: 50px; /* ID column */
             text-align: center; /* Center the text */
-
 
             position: sticky;
             left: 0px;
             background-color: #f2f2f2; /* Matches header background */
             z-index: 4;
-            
-            
+             
         }
 
         th:nth-child(2), td:nth-child(2) {
@@ -267,7 +256,6 @@
             left: 240px;
             background-color: #f2f2f2; /* Matches header background */
             z-index: 4;
-        
         }
 
         th:nth-child(6), td:nth-child(6) {
@@ -375,6 +363,38 @@
             border-radius: 4px;
         }
 
+        .pagination{
+        margin:10px;
+    }
+
+    .pagination-btn {
+        padding: 10px 15px;
+        text-decoration: none;
+        color: black;
+        background-color: #f8f9fa; /* Light background for normal buttons */
+        border-radius: 5px;
+        font-size: 14px;
+        border: 1px solid #ddd;
+    }
+    .pagination-btn:hover {
+        background-color: #e9ecef; /* Slightly darker on hover */
+    }
+    .pagination-btn.active {
+        background-color: #007bff; /* Blue for the active/current page */
+        color: white;
+        font-weight: bold;
+    }
+    .pagination-btn.disabled {
+        pointer-events: none; /* Disable clicks */
+        background-color: #ccc; /* Light gray for disabled state */
+        color: #666; /* Gray text for disabled state */
+    }
+    .ellipsis {
+        padding: 10px 15px;
+        color: #666;
+        font-size: 14px;
+    }
+
         
     </style>
 </head>
@@ -401,58 +421,40 @@
         </a>
     </div>
 
+    <!-- the name="search" is your get request -->
     <div class="search-container">
-        <input type="text" id="searchInput" onkeyup="searchTable()" placeholder="Search ..." >
+        <form method="get" action="/view_product_data">
+            <input 
+                type="text" 
+                name="search" 
+                id="searchInput" 
+                value="{{ search_query }}" 
+                placeholder="Search ..."
+            >
+            <button type="submit">Search</button>
+
+            <div>Found {{ total_count }} matching results</div>
+        </form>
     </div>
-
-    <!-- <div class="body-top" > 
-        <form action="/view_product_data" method="GET" >
-            <button style="background-color: rgb(27, 184, 174); border: none; cursor: pointer;" type="submit">
-                <i class="fa fa-refresh"></i>
-            </button>
-        </form>
-
-        <form action="/update_all_product_count/45" method="POST">
-            <button type="submit" onclick="return confirm('Are you sure you want to update <=45 days ago data?');">Update Count</button>
-        </form>
-
-        <form action="/update_product_days_ago" method="POST">
-            <button style="background-color: blue"  type="submit" >Update Days</button>
-        </form>
-
-        <form action="/view_product_data/45" method="GET" >
-            <button style="background-color: orangered" type="submit" >45 Days Data</button>
-        </form>
-
-        <form action="/" method="GET" >
-            <button style="background-color: rgb(16, 16, 16)" type="submit" >
-                <i class="fas fa-search"></i>
-            </button>
-        </form>
-
-        <div class="search-container">
-            <input type="text" id="searchInput" onkeyup="searchTable()" placeholder="Search for products..." >
-        </div>
-    </div> -->
 
     <div class="table-wrapper">
         <table id="dataTable">
         <thead>
             <tr>
-                <th style="z-index: 5" onclick="sortTable(0)">ID <span class="sort-icon" id="sort-icon-0"></span></th>
-                <th style="z-index: 5" onclick="sortTable(1)">Product Name <span class="sort-icon" id="sort-icon-1"></span></th>
-                <th onclick="sortTable(2)">URL <span class="sort-icon" id="sort-icon-2"></span></th>
-                <th onclick="sortTable(3)">Created At <span class="sort-icon" id="sort-icon-3"></span></th>
-                <th style="z-index: 5" onclick="sortTable(4)">Created Days Ago <span class="sort-icon" id="sort-icon-4"></span></th>
-                <th onclick="sortTable(5)">WHOIS URL <span class="sort-icon" id="sort-icon-5"></span></th>
-                <th onclick="sortTable(6)">Registration Date <span class="sort-icon" id="sort-icon-6"></span></th>
-                <th onclick="sortTable(7)">Registration Days Ago <span class="sort-icon" id="sort-icon-7"></span></th>
-                <th onclick="sortTable(8)">Ads Library URL <span class="sort-icon" id="sort-icon-8"></span></th>
-                <th onclick="sortTable(9)">Result Count <span class="sort-icon" id="sort-icon-9"></span></th>
-                <th onclick="sortTable(10)">Result Count History <span class="sort-icon" id="sort-icon-10"></span></th>
-                <th onclick="sortTable(11)">Track Date <span class="sort-icon" id="sort-icon-11"></span></th>
-                <th onclick="sortTable(12)">Track Days Ago <span class="sort-icon" id="sort-icon-12"></span></th>
-                <th onclick="sortTable(13)">Count Difference <span class="sort-icon" id="sort-icon-13"></span></th>
+                <th style="z-index: 5">ID</th>
+                <th style="z-index: 5">Product Name</th>
+                <th>URL </th>
+                <th>Created At </th>
+                <th style="z-index: 5">Created Days Ago </th>
+                <th>WHOIS URL </th>
+                <th>Registration Date </th>
+                <th>Registration Days Ago </th>
+                <th>Ads Library URL </th>
+                <th>Result Count</th>
+                <th>Result Count History</th>
+                <th>Track Date </th>
+                <th>Track Days Ago </th>
+                <th>Count Difference </th>
                 <th>Action</th>
             </tr>
         </thead>
@@ -573,113 +575,57 @@
     </script>
     
 
-    <script>
-        let currentSortColumn = -1;
-        let currentSortDirection = 'asc'; // Default to ascending sort
-    
-        function sortTable(columnIndex) {
-            const table = document.getElementById('dataTable');
-            const rows = Array.from(table.rows).slice(1); // Get all rows except the header
-            const isNumericColumn = [0, 4, 7, 9, 12, 13].includes(columnIndex); // Days ago, Result Count, etc.
-            const isDateColumn = [3, 6, 11].includes(columnIndex); // Date columns
-    
-            if (currentSortColumn === columnIndex) {
-                // Toggle the sort direction if the same column is clicked
-                currentSortDirection = (currentSortDirection === 'asc') ? 'desc' : 'asc';
-            } else {
-                // Default to ascending sort for new columns
-                currentSortDirection = 'asc';
-            }
-    
-            // Clear all icons before updating the current one
-            const icons = document.querySelectorAll('.sort-icon');
-            icons.forEach(icon => icon.textContent = '');
-    
-            const currentIcon = document.getElementById('sort-icon-' + columnIndex);
-    
-            rows.sort((rowA, rowB) => {
-                const cellA = rowA.cells[columnIndex].innerText.trim();
-                const cellB = rowB.cells[columnIndex].innerText.trim();
-    
-                let comparison = 0;
-    
-                if (isNumericColumn) {
-                    const valueA = extractNumericValue(rowA.cells[columnIndex]);
-                    const valueB = extractNumericValue(rowB.cells[columnIndex]);
-                    comparison = valueA - valueB;
-                } else if (isDateColumn) {
-                    const dateA = new Date(cellA);
-                    const dateB = new Date(cellB);
-                    comparison = dateA - dateB;
-                } else {
-                    comparison = cellA.localeCompare(cellB);
-                }
-    
-                return currentSortDirection === 'asc' ? comparison : -comparison;
-            });
-    
-            rows.forEach(row => table.appendChild(row));
-    
-            // Update the sort icon
-            currentIcon.textContent = currentSortDirection === 'asc' ? '▲' : '▼';
-            currentSortColumn = columnIndex;
-        }
-    
-        // Function to extract numeric value from cells with icons or other formatting
-        function extractNumericValue(cell) {
-            const text = cell.innerText.trim(); // Get text content
-            const numberMatch = text.match(/-?\d+/); // Match numeric value
-            return numberMatch ? parseInt(numberMatch[0]) : 0; // Default to 0 if no number is found
-        }
-    </script>
-    
 
-<script>
-    // Loop through all rows in the table and apply the conditional color to 'Result Count' cells
-    document.querySelectorAll("#dataTable tbody tr").forEach(row => {
-        // Select the Result Count cell (10th cell in each row)
-        const resultCountCell = row.cells[9];
-        const resultCount = parseInt(resultCountCell.textContent, 10);
+<!-- Pagination Controls -->
+<div class="pagination" style="display: flex; gap: 10px; justify-content: center; align-items: center;">
+    <!-- Previous Button -->
+    <a href="/view_product_data?page={{ page - 1 }}&search={{ search_query }}" 
+       class="pagination-btn {{ 'disabled' if page <= 1 else '' }}" 
+       style="{{ 'pointer-events: none; background-color: #ccc;' if page <= 1 else '' }}">
+        Previous
+    </a>
 
-        // Check if the count is above 30 and apply green background if true
-        if (resultCount >= 20) {
-            resultCountCell.style.backgroundColor = "#78b97a";
-            resultCountCell.style.color = "white"; // Optional: change text color for better contrast
-        }
-    });
-</script>
+    <!-- First Page -->
+    <a href="/view_product_data?page=1&search={{ search_query }}" class="pagination-btn {{ 'active' if page == 1 else '' }}">
+        1
+    </a>
 
-<script>
+    <!-- Ellipsis before current range -->
+    {% if page > 4 %}
+        <span class="ellipsis">...</span>
+    {% endif %}
 
-    function searchTable() {
-        const input = document.getElementById("searchInput");
-        const filter = input.value.toLowerCase();
-        const table = document.getElementById("dataTable");
-        const rows = table.getElementsByTagName("tr");
+    <!-- Page Numbers Around Current Page -->
+    {% for p in range(page - 2, page + 3) %}
+        {% if p > 1 and p < total_pages %}
+            <a href="/view_product_data?page={{ p }}&search={{ search_query }}" 
+               class="pagination-btn {{ 'active' if p == page else '' }}" 
+               style="{{ 'background-color: #007bff; color: white;' if p == page else '' }}">
+                {{ p }}
+            </a>
+        {% endif %}
+    {% endfor %}
 
-        for (let i = 1; i < rows.length; i++) {  // Skip the header row
-            const cells = rows[i].getElementsByTagName("td");
-            let match = false;
-            
-            for (let j = 0; j < cells.length; j++) {
-                if (cells[j]) {
-                    if (cells[j].textContent.toLowerCase().indexOf(filter) > -1) {
-                        match = true;
-                        break;  // Stop once a match is found in any column
-                    }
-                }
-            }
-            
-            if (match) {
-                rows[i].style.display = "";
-            } else {
-                rows[i].style.display = "none";  // Hide row if no match is found
-            }
-        }
-    }
+    <!-- Ellipsis after current range -->
+    {% if page < total_pages - 3 %}
+        <span class="ellipsis">...</span>
+    {% endif %}
 
-</script>
+    <!-- Last Page (Show this page if you're on the last page or if not already shown) -->
+    {% if total_pages > 1 %}
+        <a href="/view_product_data?page={{ total_pages }}&search={{ search_query }}" 
+           class="pagination-btn {{ 'active' if page == total_pages else '' }}">
+            {{ total_pages }}
+        </a>
+    {% endif %}
 
+    <!-- Next Button -->
+    <a href="/view_product_data?page={{ page + 1 }}&search={{ search_query }}" 
+       class="pagination-btn {{ 'disabled' if page >= total_pages else '' }}" 
+       style="{{ 'pointer-events: none; background-color: #ccc;' if page >= total_pages else '' }}">
+        Next
+    </a>
+</div>
 
 
 

@@ -716,21 +716,21 @@ def extract_library_ids(driver, keyword):
                                 try : 
                                     prod_created_date, product_name = new_extract_data_from_xml(product_xml_url)
                                     if prod_created_date == None:
-                                        status = "ERROR - No XML data."
+                                        status = "ERROR - No XML data, skip database entry."
                                         print(status)
                                         continue
                                 except Exception as e:
-                                    status = "ERROR - Exception unable to extract XML data."
+                                    status = "ERROR - Unable to extract XML data, skip database entry."
                                     print(status)
                                     continue
 
                             else:
-                                status = "ERROR - 'Shop Now' button found, but no href attribute."
+                                status = "ERROR - Creative Product Link not found, skip database entry."
                                 print(status)
                                 continue
 
                         except Exception as e:
-                            status = "ERROR - 'Shop Now' button not found."
+                            status = "ERROR - 'Shop Now' button not found, skip database entry."
                             # status = f"ERROR for shop now encountered: {e}"
                             print(status)
                             continue
@@ -741,7 +741,7 @@ def extract_library_ids(driver, keyword):
                         if ADSData.query.filter_by(product_link=product_link).first():
 
                             # If product in database, & last_update is more than 1 hour ago, update the product AA
-                            status = "ERROR - Product Link in database, Skipping result count & entry."
+                            status = "ERROR - Product Link in database, skip database entry."
                             print(status)
                             continue
 
@@ -753,7 +753,7 @@ def extract_library_ids(driver, keyword):
 
                         # Check if library_id exists in the database
                         if ADSData.query.filter_by(div_library_id=div_library_id).first():
-                            status = "ERROR - Library ID in database,  Skipping result count & entry."
+                            status = "ERROR - Library ID exist in database, skip database entry."
                             print(status)
                             continue
 
@@ -868,31 +868,25 @@ def extract_library_ids(driver, keyword):
                             print(status)
                             return status
 
-                        if faceboook_created_date is None :
-                            status = "ERROR - Facebook Creation Date is None, skip database entry."
-                            print(status)
-                            continue
+                        # Define variables and their corresponding error messages
+                        checks = [
+                            (faceboook_created_date, "ERROR - Facebook Creation Date is None, skip database entry."),
+                            (result_count, "ERROR - Result Count is None, skip database entry."),
+                            (domain_reg_date, "ERROR - Domain Registration Date is None, skip database entry."),
+                            (creative_start_date, "ERROR - Creative Start Date is None, skip database entry."),
+                            (products_count, "ERROR - Total Product Count is None, skip database entry."),
+                            (div_library_id, "ERROR - Library ID is None, skip database entry.")
+                        ]
 
-                        if result_count is None : 
-                            status = "ERROR - Result Count is None, skip database entry."
-                            flag += 1
-                            print(status)
-                            continue
+                        for variable, error_message in checks:
+                            if variable is None:
+                                status = error_message
+                                flag += 1  # Increment flag for each issue, if needed
+                                print(status)
+                                continue  # Skip to the next iteration
 
-                        if domain_reg_date is None:
-                            status = "ERROR - Domain Registration Date is None, skip database entry."
-                            flag += 1
-                            print(status)
-                            continue
-
-                        if creative_start_date is None:
-                            status = "ERROR - Creative Start Date is None, skip database entry."
-                            flag += 1
-                            print(status)
-                            continue
-
-                        if products_count is None or products_count <= 0:
-                            status = "ERROR - Total Products Count is None, skip database entry."
+                        if products_count <= 0:
+                            status = "ERROR - Total Products Count is <= 0, skip database entry."
                             flag += 1
                             print(status)
                             continue
@@ -1154,16 +1148,47 @@ def prod_search():
 
 @app.route("/view_product_data")
 def view_product_data():
-    all_data = URLData.query.order_by(URLData.id.desc()).all()
-    return render_template("view_product_data.html", all_data=all_data)
 
-# @app.route("/view_log_data")
-# def view_log_data():
-#     # Order by 'id' or 'start_time' in descending order
-#     all_data = LogData.query.order_by(LogData.id.desc()).all()
-#     # Alternatively, use start_time if it determines order
-#     # all_data = LogData.query.order_by(LogData.start_time.desc()).all()
-#     return render_template("view_log_data.html", all_data=all_data)
+    # Get the current page number and search term from query parameters
+    page = int(request.args.get("page", 1))
+    per_page = 5  # Number of rows per page
+    search_query = request.args.get("search", "").strip()  # Get search term
+
+    # Query the database with a filter if search_query is provided
+    if search_query:
+        # Dynamically build a search across all columns
+        query = URLData.query.filter(
+            URLData.id.ilike(f"%{search_query}%") |
+            URLData.domain.ilike(f"%{search_query}%") |
+            URLData.url.ilike(f"%{search_query}%") |
+            URLData.product_name.ilike(f"%{search_query}%")
+        )
+    else:
+        query = URLData.query
+
+    total_count = query.count()
+
+    # Paginate the filtered data
+    paginated_data = query.order_by(URLData.id.desc()).paginate(page=page, per_page=per_page, error_out=False)
+
+    # Extract the paginated items for the current page
+    all_data = paginated_data.items
+    total_pages = paginated_data.pages
+    current_page = paginated_data.page
+
+    return render_template(
+        "view_product_data.html",
+        all_data=all_data,
+        page=current_page,
+        total_pages=total_pages,
+        search_query=search_query,  # Pass search query to the template
+        total_count=total_count
+    )
+
+
+
+
+
 
 @app.route("/view_log_data")
 def view_log_data():
@@ -2298,9 +2323,9 @@ if __name__ == "__main__":
             start_scheduler()  # Start the scheduler
             
             # Run keyword loop search - have to run in a seperate thread to not block main app
-            # thread = threading.Thread(target=keyword_loop_search)
-            # thread.daemon = True  # Make the thread a daemon so it exits when the main program exits
-            # thread.start()
+            thread = threading.Thread(target=keyword_loop_search)
+            thread.daemon = True  # Make the thread a daemon so it exits when the main program exits
+            thread.start()
 
             # thread = threading.Thread(target=update_all_page_count_scheduler_tracked)
             # thread.daemon = True
