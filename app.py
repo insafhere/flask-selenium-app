@@ -117,6 +117,7 @@ class LogData(db.Model):
 # Initialize the database
 with app.app_context():
     db.create_all()
+
 def initialize_driver():
     # Automatically download and install the correct version of chromedriver
     chromedriver_autoinstaller.install()
@@ -131,6 +132,20 @@ def initialize_driver():
     options.add_argument("--window-size=800x600")  # Set small window size to reduce resource usage
     options.add_argument("--disable-logging")  # Disable logging if not needed
 
+    # Additional flags for media handling in windows
+    options.add_argument("--disable-accelerated-video-decode")  # Disable accelerated video decode
+    options.add_argument("--disable-video-decoder")  # Force disabling video decoding
+    options.add_argument("--disable-media-playback")  # Disable media playback (if not required)
+    options.add_argument("--log-level=3")  # Suppress non-critical logs
+    options.add_argument("--disable-features=MediaSessionService")  # Disable media session
+    options.add_argument("--disable-plugins")  # Disable plugins
+    options.add_argument("--disable-software-rasterizer")  # Prevent use of software rasterizer
+    options.add_argument("--media-cache-size=1")  # Limit media cache size
+    options.add_argument("--disable-media-cache")  # Disable media cache
+    options.add_argument("--disable-web-security")  # Disable web security features (use with caution)
+    options.add_argument("--disable-media-stream")  # Disable media streams
+    options.add_argument("--disable-audio-context")  # Disable audio context
+
     # Configure driver settings based on environment
     if os.getenv('RENDER') == 'true':  # Render environment
         chrome_bin = "/usr/bin/chromium"  # Render's default Chromium binary
@@ -139,8 +154,15 @@ def initialize_driver():
         driver = webdriver.Chrome(service=service, options=options)
 
     elif platform.system() == 'Windows':  # Windows-specific setup
-        # chromedriver_autoinstaller installs the correct version in the system's PATH
-        service = Service(chromedriver_autoinstaller.install())
+        # Option 1 : chromedriver_autoinstaller installs the correct version in the system's PATH (DONT WORK)
+        # chromedriver_path = chromedriver_autoinstaller.install()
+
+        # Option 2 : Specify chromedriver path manually
+        chromedriver_path = r"C:\Users\insaf\OneDrive\Desktop\Softwares\chromedriver.exe"  # Update with your path
+        service = Service(executable_path=chromedriver_path)
+
+        print(f"Chromedriver installed at: {chromedriver_path}")  # Check installation path
+        
         driver = webdriver.Chrome(service=service, options=options)
 
     else:  # Mac/Linux local environment
@@ -622,9 +644,10 @@ def extract_library_ids(driver, keyword):
                         if match_id:
                             div_library_id = match_id.group(1)
 
-                        # Match start date
-                        match_date = re.search(r'Started running on (\d{1,2} \w{3} \d{4})', text)
+                        # Correct pattern with month first
+                        match_date = re.search(r'Started running on (\w{3} \d{1,2}, \d{4})', text)
                         if match_date:
+                            # print(f"match date : {match_date}")
                             creative_start_date = convert_stringdate_to_date(validate_and_format_date(match_date.group(1)))
 
                         # Extract the number of ads using regex
