@@ -41,6 +41,8 @@ from flask import request, redirect
 from whois import whois
 from urllib.parse import urlparse, parse_qs, unquote, urlencode, urlunparse
 
+from selenium.webdriver.common.action_chains import ActionChains
+
 app = Flask(__name__)
 
 # Configure SQLite database
@@ -88,6 +90,7 @@ class ADSData(db.Model):
     page_id = db.Column(db.String(100)) # Facebook Page ID
     page_ads_link = db.Column(db.String(300)) # Facebook Page Ads Library Link
     faceboook_created_date = db.Column(db.Date) # NEW!!!!
+    facebook_changed_date = db.Column(db.Date) # NEW!!!!
 
     result_count = db.Column(db.Integer) # Total Facebook Page AAs
     result_count_history = db.Column(db.String(500)) # Total Facebook Page AAs History
@@ -821,6 +824,13 @@ def extract_library_ids(driver, keyword):
 
                         print(f"Page Name: {page_name}")
 
+                        #####  EXTRACT PAGE LAST CHANGED DATE ####
+                        facebook_changed_date = get_facebook_changed_date(driver, faceboook_created_date)
+                        print(f"Facebook Latest Changed Date: {facebook_changed_date}")
+
+                        # if facebook_changed_date != faceboook_created_date:
+                        #     print("Changed and Created dates are different!")
+
                         # Close the current tab after extraction
                         driver.close()
 
@@ -879,7 +889,8 @@ def extract_library_ids(driver, keyword):
                             (domain_reg_date, "ERROR - Domain Registration Date is None, skip database entry."),
                             (creative_start_date, "ERROR - Creative Start Date is None, skip database entry."),
                             (products_count, "ERROR - Total Product Count is None, skip database entry."),
-                            (div_library_id, "ERROR - Library ID is None, skip database entry.")
+                            (div_library_id, "ERROR - Library ID is None, skip database entry."),
+                            (facebook_changed_date, "ERROR - Facebook Changed Date is None, skip database entry.")
                         ]
 
                         exit = False
@@ -923,7 +934,8 @@ def extract_library_ids(driver, keyword):
                             products_count = products_count,
                             domain = domain,
                             last_update = last_update,
-                            added_date = added_date
+                            added_date = added_date,
+                            facebook_changed_date = facebook_changed_date
                         )
                         db.session.add(new_data)
 
@@ -987,6 +999,54 @@ def extract_library_ids(driver, keyword):
     db.session.commit()
 
     return status
+
+def get_facebook_changed_date(driver, page_creation_date):
+    facebook_changed_date = None
+    try:
+        driver.execute_script("""
+            var elements = document.querySelectorAll('div[aria-label="See All"].x1i10hfl');
+            elements.forEach(function(element) {
+                element.click();  // Simulate click on the 'See All' button
+            });
+        """)
+
+        # print("Clicked 'See All' Button...")
+
+        # Wait until more than 2 elements are found
+        WebDriverWait(driver, 10).until(
+            lambda driver: len(driver.find_elements(By.XPATH, "//*[contains(@class, 'x676frb') and contains(@class, 'x1nxh6w3')]")) > 2
+        )
+
+        # Now that we know there are more than 2 elements, find them
+        elements = driver.find_elements(By.XPATH, "//*[contains(@class, 'x676frb') and contains(@class, 'x1nxh6w3')]")
+
+        # Check if there are at least two elements and print their text
+        if len(elements) > 2:
+            # print(f"First element text: {elements[0].text}")  # Index 0 corresponds to the first element
+            # print(f"Second element text: {elements[1].text}")  # Index 1 corresponds to the second element
+            # print(f"Third element text: {elements[2].text}")  # Index 1 corresponds to the second element
+            
+            # print(f"Element text: {elements[2].text}")  # Index 1 corresponds to the second element
+
+            try:
+                # Try parsing the date, check if its even a
+                if datetime.strptime(elements[2].text, "%B %d, %Y"):
+                    facebook_changed_date = convert_stringdate_to_date(validate_and_format_date(elements[2].text))
+            except ValueError:
+                # Handle the case when the date format doesn't match
+                # print("Invalid date format, so update facebook_changed_date as page_creation_date")
+                facebook_changed_date = page_creation_date
+            
+            # print(f"Facebook Latest Changed Date: {facebook_changed_date}")
+        else:
+            print("ERROR - Facebook Latest Changed Date not found")
+            facebook_changed_date = page_creation_date
+    
+    except Exception as e:
+        print(f"Error: {e}")
+        return page_creation_date
+    
+    return facebook_changed_date
 
 
 def find_products_count(domain):
@@ -1961,7 +2021,8 @@ def view_page_data():
 
         query = ADSData.query
 
-        page_created_days_threshold = request.args.get('pageCreatedDateThreshold', type=int)
+        # page_created_days_threshold = request.args.get('pageCreatedDateThreshold', type=int)
+        page_changed_days_threshold = request.args.get('pageChangedDateThreshold', type=int)
         result_count_threshold = request.args.get('resultCountThreshold', type=int)
         product_created_days_threshold = request.args.get('productCreatedDateThreshold', type=int)
         product_domain_days_threshold = request.args.get('productDomainDateThreshold', type=int)
@@ -1969,8 +2030,10 @@ def view_page_data():
         added_days = request.args.get('addedDays', type=int)
 
         # Now, the filter will only apply if the values are provided
-        if page_created_days_threshold is not None:
-            query = query.filter(ADSData.faceboook_created_date >= datetime.today().date() - timedelta(days=page_created_days_threshold))
+        # if page_created_days_threshold is not None:
+        #     query = query.filter(ADSData.faceboook_created_date >= datetime.today().date() - timedelta(days=page_created_days_threshold))
+        if page_changed_days_threshold is not None:
+            query = query.filter(ADSData.facebook_changed_date >= datetime.today().date() - timedelta(days=page_changed_days_threshold))
         if result_count_threshold is not None:
             query = query.filter(ADSData.result_count >= result_count_threshold)
         if product_created_days_threshold is not None:
@@ -2082,7 +2145,8 @@ def view_page_data():
             data.formatted_last_update, data.time_ago_last_update = format_datetime(data.last_update)
             data.formatted_added_date, data.time_ago_added_date  = format_datetime(data.added_date)
             data.formatted_creative_start_date, data.days_ago_creative_start_date = format_date(data.creative_start_date)
-            data.formatted_faceboook_created_date, data.days_ago_faceboook_created_date = format_date(data.faceboook_created_date)
+            # data.formatted_faceboook_created_date, data.days_ago_faceboook_created_date = format_date(data.faceboook_created_date)
+            data.formatted_facebook_changed_date, data.days_ago_facebook_changed_date = format_date(data.facebook_changed_date)
             data.formatted_prod_created_date, data.days_ago_prod_created_date = format_date(data.prod_created_date)
             data.formatted_domain_reg_date, data.days_ago_domain_reg_date = format_date(data.domain_reg_date)
 
@@ -2094,7 +2158,8 @@ def view_page_data():
                                     search_query=search_query,  # Pass search query to the template
                                     total_count=total_count,
                                     track_filter = track_filter,
-                                    page_created_days_threshold = page_created_days_threshold,
+                                    # page_created_days_threshold = page_created_days_threshold,
+                                    page_changed_days_threshold = page_changed_days_threshold,
                                     productsCount = productsCount,
                                     result_count_threshold = result_count_threshold,
                                     product_created_days_threshold = product_created_days_threshold,
@@ -2177,6 +2242,57 @@ def update_error():
         
         # Commit the changes to the database
         db.session.commit()
+
+def update_all_facebook_changed_dates():
+    with app.app_context():
+        # Query records where the 'facebook_changed_date' field is None
+        records_to_update = ADSData.query.filter(
+            ADSData.facebook_changed_date.is_(None)
+        ).all()
+
+        total_count = len(records_to_update)
+        print(f"Total records to update: {total_count}")
+
+        # Initialize the driver
+        driver = initialize_driver()
+
+        for count, record in enumerate(records_to_update, start=1):
+            try:
+                print(f"[{count}/{total_count}] Updating record for ID: {record.id}")
+                facebook_about_page = record.div_href + "about_profile_transparency"
+                print(f"Facebook About Page Link: {facebook_about_page}")
+
+                driver.get(facebook_about_page)
+
+                print(f"Facebook Created Date: {record.faceboook_created_date}")
+                
+                # Call function to get the latest changed date
+                facebook_changed_date = get_facebook_changed_date(driver, record.faceboook_created_date)
+                print(f"Facebook Latest Changed Date: {facebook_changed_date}")
+
+                # Skip if None
+                if facebook_changed_date is None:
+                    # db.session.delete(record)
+                    # db.session.commit()
+                    print(f"Page Changed Date is None, so deleting record...")
+                    continue
+
+                # Update the record with the new date
+                record.facebook_changed_date = facebook_changed_date
+
+                # Commit after every record if needed (optional based on batch commit preference)
+                db.session.commit()
+
+            except Exception as e:
+                print(f"Error while processing record ID {record.id}: {e}")
+
+        # Commit all the updates at once
+        # db.session.commit()
+
+        # Close the driver after all records are updated
+        driver.quit()
+
+        print("All records updated successfully!")
 
 
 def delete_records_with_none_dates():
@@ -2385,12 +2501,12 @@ if __name__ == "__main__":
             start_scheduler()  # Start the scheduler
             
             # Run keyword loop search - have to run in a seperate thread to not block main app
-            # thread = threading.Thread(target=keyword_loop_search)
-            # thread.daemon = True  # Make the thread a daemon so it exits when the main program exits
-            # thread.start()
+            thread = threading.Thread(target=keyword_loop_search)
+            thread.daemon = True  # Make the thread a daemon so it exits when the main program exits
+            thread.start()
 
-            # thread = threading.Thread(target=delete_records_with_none_dates)
-            # thread.daemon = True
-            # thread.start()
+            thread = threading.Thread(target=update_all_facebook_changed_dates)
+            thread.daemon = True
+            thread.start()
 
         app.run(debug=True, threaded=True, host=host, port=port, use_reloader=False)

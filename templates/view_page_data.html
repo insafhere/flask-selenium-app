@@ -478,8 +478,8 @@
             <label for="productDomainDateThreshold">Domain Days (≤)</label>
             <input type="number" id="productDomainDateThreshold" name="productDomainDateThreshold" value="{{ product_domain_days_threshold }}" />
 
-            <label for="pageCreatedDateThreshold">Page Days (≤)</label>
-            <input type="number" id="pageCreatedDateThreshold" name="pageCreatedDateThreshold" value="{{ page_created_days_threshold }}" />
+            <label for="pageChangedDateThreshold">Page Days (≤)</label>
+            <input type="number" id="pageChangedDateThreshold" name="pageChangedDateThreshold" value="{{ page_changed_days_threshold }}" />
 
             <label for="resultCountThreshold">Page AAs (≥)</label>
             <input type="number" id="resultCountThreshold" name="resultCountThreshold" value="{{ result_count_threshold }}" />
@@ -511,7 +511,7 @@
         <thead>
             <tr>
                 <th style="z-index: 5">
-                    <a href="/view_page_data?page={{ page }}&search={{ search_query }}&track_filter={{ track_filter }}&pageCreatedDateThreshold={{ page_created_days_threshold }}&resultCountThreshold={{ result_count_threshold }}&productCreatedDateThreshold={{ product_created_days_threshold }}&productDomainDateThreshold={{ product_domain_days_threshold }}&productsCount={{ productsCount }}&sortBy=id&sortOrder={{ 'asc' if sortBy == 'id' and sortOrder == 'desc' else 'desc' }}&addedDays={{ addedDays }}">
+                    <a href="/view_page_data?page={{ page }}&search={{ search_query }}&track_filter={{ track_filter }}&pageChangedDateThreshold={{ page_changed_days_threshold }}&resultCountThreshold={{ result_count_threshold }}&productCreatedDateThreshold={{ product_created_days_threshold }}&productDomainDateThreshold={{ product_domain_days_threshold }}&productsCount={{ productsCount }}&sortBy=id&sortOrder={{ 'asc' if sortBy == 'id' and sortOrder == 'desc' else 'desc' }}&addedDays={{ addedDays }}">
                         ID
                         {% if sortBy == 'id' %}
                             <span class="sort-icon {{ 'asc-icon' if sortOrder == 'asc' else 'desc-icon' }}"></span>
@@ -519,7 +519,7 @@
                     </a>
                 </th>
                 <th style="z-index: 5">
-                    <a href="/view_page_data?page={{ page }}&search={{ search_query }}&track_filter={{ track_filter }}&pageCreatedDateThreshold={{ page_created_days_threshold }}&resultCountThreshold={{ result_count_threshold }}&productCreatedDateThreshold={{ product_created_days_threshold }}&productDomainDateThreshold={{ product_domain_days_threshold }}&productsCount={{ productsCount }}&sortBy=product_name&sortOrder={{ 'asc' if sortBy == 'product_name' and sortOrder == 'desc' else 'desc' }}&addedDays={{ addedDays }}">
+                    <a href="/view_page_data?page={{ page }}&search={{ search_query }}&track_filter={{ track_filter }}&pageChangedDateThreshold={{ page_changed_days_threshold }}&resultCountThreshold={{ result_count_threshold }}&productCreatedDateThreshold={{ product_created_days_threshold }}&productDomainDateThreshold={{ product_domain_days_threshold }}&productsCount={{ productsCount }}&sortBy=product_name&sortOrder={{ 'asc' if sortBy == 'product_name' and sortOrder == 'desc' else 'desc' }}&addedDays={{ addedDays }}">
                         Product Name
                         {% if sortBy == 'product_name' %}
                             <span class="sort-icon {{ 'asc-icon' if sortOrder == 'asc' else 'desc-icon' }}"></span>
@@ -527,7 +527,7 @@
                     </a>
                 </th>
                 <th style="z-index: 5">
-                    <a href="/view_page_data?page={{ page }}&search={{ search_query }}&track_filter={{ track_filter }}&pageCreatedDateThreshold={{ page_created_days_threshold }}&resultCountThreshold={{ result_count_threshold }}&productCreatedDateThreshold={{ product_created_days_threshold }}&productDomainDateThreshold={{ product_domain_days_threshold }}&productsCount={{ productsCount }}&sortBy=prod_created_date&sortOrder={{ 'asc' if sortBy == 'prod_created_date' and sortOrder == 'desc' else 'desc' }}&addedDays={{ addedDays }}">
+                    <a href="/view_page_data?page={{ page }}&search={{ search_query }}&track_filter={{ track_filter }}&pageChangedDateThreshold={{ page_changed_days_threshold }}&resultCountThreshold={{ result_count_threshold }}&productCreatedDateThreshold={{ product_created_days_threshold }}&productDomainDateThreshold={{ product_domain_days_threshold }}&productsCount={{ productsCount }}&sortBy=prod_created_date&sortOrder={{ 'asc' if sortBy == 'prod_created_date' and sortOrder == 'desc' else 'desc' }}&addedDays={{ addedDays }}">
                         Product Creation Date
                         {% if sortBy == 'prod_created_date' %}
                             <span class="sort-icon {{ 'asc-icon' if sortOrder == 'asc' else 'desc-icon' }}"></span>
@@ -535,7 +535,7 @@
                     </a>
                 </th>
                 <th>
-                    <a href="/view_page_data?page={{ page }}&search={{ search_query }}&track_filter={{ track_filter }}&pageCreatedDateThreshold={{ page_created_days_threshold }}&resultCountThreshold={{ result_count_threshold }}&productCreatedDateThreshold={{ product_created_days_threshold }}&productDomainDateThreshold={{ product_domain_days_threshold }}&productsCount={{ productsCount }}&sortBy=domain_reg_date&sortOrder={{ 'asc' if sortBy == 'domain_reg_date' and sortOrder == 'desc' else 'desc' }}&addedDays={{ addedDays }}">
+                    <a href="/view_page_data?page={{ page }}&search={{ search_query }}&track_filter={{ track_filter }}&pageChangedDateThreshold={{ page_changed_days_threshold }}&resultCountThreshold={{ result_count_threshold }}&productCreatedDateThreshold={{ product_created_days_threshold }}&productDomainDateThreshold={{ product_domain_days_threshold }}&productsCount={{ productsCount }}&sortBy=domain_reg_date&sortOrder={{ 'asc' if sortBy == 'domain_reg_date' and sortOrder == 'desc' else 'desc' }}&addedDays={{ addedDays }}">
                         Domain Registration Date
                         {% if sortBy == 'domain_reg_date' %}
                             <span class="sort-icon {{ 'asc-icon' if sortOrder == 'asc' else 'desc-icon' }}"></span>
@@ -543,15 +543,15 @@
                     </a>
                 </th>
                 <th>
-                    <a href="/view_page_data?page={{ page }}&search={{ search_query }}&track_filter={{ track_filter }}&pageCreatedDateThreshold={{ page_created_days_threshold }}&resultCountThreshold={{ result_count_threshold }}&productCreatedDateThreshold={{ product_created_days_threshold }}&productDomainDateThreshold={{ product_domain_days_threshold }}&productsCount={{ productsCount }}&sortBy=faceboook_created_date&sortOrder={{ 'asc' if sortBy == 'faceboook_created_date' and sortOrder == 'desc' else 'desc' }}&addedDays={{ addedDays }}">
-                        Facebook Page Creation Date
-                        {% if sortBy == 'faceboook_created_date' %}
+                    <a href="/view_page_data?page={{ page }}&search={{ search_query }}&track_filter={{ track_filter }}&pageChangedDateThreshold={{ page_changed_days_threshold }}&resultCountThreshold={{ result_count_threshold }}&productCreatedDateThreshold={{ product_created_days_threshold }}&productDomainDateThreshold={{ product_domain_days_threshold }}&productsCount={{ productsCount }}&sortBy=facebook_changed_date&sortOrder={{ 'asc' if sortBy == 'facebook_changed_date' and sortOrder == 'desc' else 'desc' }}&addedDays={{ addedDays }}">
+                        Facebook Page Latest Date
+                        {% if sortBy == 'facebook_changed_date' %}
                             <span class="sort-icon {{ 'asc-icon' if sortOrder == 'asc' else 'desc-icon' }}"></span>
                         {% endif %}
                     </a> 
                 </th>
                 <th>
-                    <a href="/view_page_data?page={{ page }}&search={{ search_query }}&track_filter={{ track_filter }}&pageCreatedDateThreshold={{ page_created_days_threshold }}&resultCountThreshold={{ result_count_threshold }}&productCreatedDateThreshold={{ product_created_days_threshold }}&productDomainDateThreshold={{ product_domain_days_threshold }}&productsCount={{ productsCount }}&sortBy=result_count&sortOrder={{ 'asc' if sortBy == 'result_count' and sortOrder == 'desc' else 'desc' }}&addedDays={{ addedDays }}">
+                    <a href="/view_page_data?page={{ page }}&search={{ search_query }}&track_filter={{ track_filter }}&pageChangedDateThreshold={{ page_changed_days_threshold }}&resultCountThreshold={{ result_count_threshold }}&productCreatedDateThreshold={{ product_created_days_threshold }}&productDomainDateThreshold={{ product_domain_days_threshold }}&productsCount={{ productsCount }}&sortBy=result_count&sortOrder={{ 'asc' if sortBy == 'result_count' and sortOrder == 'desc' else 'desc' }}&addedDays={{ addedDays }}">
                         Page AAs
                         {% if sortBy == 'result_count' %}
                             <span class="sort-icon {{ 'asc-icon' if sortOrder == 'asc' else 'desc-icon' }}"></span>
@@ -559,7 +559,7 @@
                     </a> 
                 </th>
                 <th>
-                    <a href="/view_page_data?page={{ page }}&search={{ search_query }}&track_filter={{ track_filter }}&pageCreatedDateThreshold={{ page_created_days_threshold }}&resultCountThreshold={{ result_count_threshold }}&productCreatedDateThreshold={{ product_created_days_threshold }}&productDomainDateThreshold={{ product_domain_days_threshold }}&productsCount={{ productsCount }}&sortBy=result_count_history&sortOrder={{ 'asc' if sortBy == 'result_count_history' and sortOrder == 'desc' else 'desc' }}&addedDays={{ addedDays }}">
+                    <a href="/view_page_data?page={{ page }}&search={{ search_query }}&track_filter={{ track_filter }}&pageChangedDateThreshold={{ page_changed_days_threshold }}&resultCountThreshold={{ result_count_threshold }}&productCreatedDateThreshold={{ product_created_days_threshold }}&productDomainDateThreshold={{ product_domain_days_threshold }}&productsCount={{ productsCount }}&sortBy=result_count_history&sortOrder={{ 'asc' if sortBy == 'result_count_history' and sortOrder == 'desc' else 'desc' }}&addedDays={{ addedDays }}">
                         Page AAs History
                         {% if sortBy == 'result_count_history' %}
                             <span class="sort-icon {{ 'asc-icon' if sortOrder == 'asc' else 'desc-icon' }}"></span>
@@ -567,7 +567,7 @@
                     </a> 
                 </th>
                 <th>
-                    <a href="/view_page_data?page={{ page }}&search={{ search_query }}&track_filter={{ track_filter }}&pageCreatedDateThreshold={{ page_created_days_threshold }}&resultCountThreshold={{ result_count_threshold }}&productCreatedDateThreshold={{ product_created_days_threshold }}&productDomainDateThreshold={{ product_domain_days_threshold }}&productsCount={{ productsCount }}&sortBy=count_difference&sortOrder={{ 'asc' if sortBy == 'count_difference' and sortOrder == 'desc' else 'desc' }}&addedDays={{ addedDays }}">
+                    <a href="/view_page_data?page={{ page }}&search={{ search_query }}&track_filter={{ track_filter }}&pageChangedDateThreshold={{ page_changed_days_threshold }}&resultCountThreshold={{ result_count_threshold }}&productCreatedDateThreshold={{ product_created_days_threshold }}&productDomainDateThreshold={{ product_domain_days_threshold }}&productsCount={{ productsCount }}&sortBy=count_difference&sortOrder={{ 'asc' if sortBy == 'count_difference' and sortOrder == 'desc' else 'desc' }}&addedDays={{ addedDays }}">
                         Page AAs Changes
                         {% if sortBy == 'count_difference' %}
                             <span class="sort-icon {{ 'asc-icon' if sortOrder == 'asc' else 'desc-icon' }}"></span>
@@ -575,7 +575,7 @@
                     </a> 
                 </th>
                 <th>
-                    <a href="/view_page_data?page={{ page }}&search={{ search_query }}&track_filter={{ track_filter }}&pageCreatedDateThreshold={{ page_created_days_threshold }}&resultCountThreshold={{ result_count_threshold }}&productCreatedDateThreshold={{ product_created_days_threshold }}&productDomainDateThreshold={{ product_domain_days_threshold }}&productsCount={{ productsCount }}&sortBy=products_count&sortOrder={{ 'asc' if sortBy == 'products_count' and sortOrder == 'desc' else 'desc' }}&addedDays={{ addedDays }}">
+                    <a href="/view_page_data?page={{ page }}&search={{ search_query }}&track_filter={{ track_filter }}&pageChangedDateThreshold={{ page_changed_days_threshold }}&resultCountThreshold={{ result_count_threshold }}&productCreatedDateThreshold={{ product_created_days_threshold }}&productDomainDateThreshold={{ product_domain_days_threshold }}&productsCount={{ productsCount }}&sortBy=products_count&sortOrder={{ 'asc' if sortBy == 'products_count' and sortOrder == 'desc' else 'desc' }}&addedDays={{ addedDays }}">
                         Total Products
                         {% if sortBy == 'products_count' %}
                             <span class="sort-icon {{ 'asc-icon' if sortOrder == 'asc' else 'desc-icon' }}"></span>
@@ -583,7 +583,7 @@
                     </a> 
                 </th>
                 <th>
-                    <a href="/view_page_data?page={{ page }}&search={{ search_query }}&track_filter={{ track_filter }}&pageCreatedDateThreshold={{ page_created_days_threshold }}&resultCountThreshold={{ result_count_threshold }}&productCreatedDateThreshold={{ product_created_days_threshold }}&productDomainDateThreshold={{ product_domain_days_threshold }}&productsCount={{ productsCount }}&sortBy=added_date&sortOrder={{ 'asc' if sortBy == 'added_date' and sortOrder == 'desc' else 'desc' }}&addedDays={{ addedDays }}">
+                    <a href="/view_page_data?page={{ page }}&search={{ search_query }}&track_filter={{ track_filter }}&pageChangedDateThreshold={{ page_changed_days_threshold }}&resultCountThreshold={{ result_count_threshold }}&productCreatedDateThreshold={{ product_created_days_threshold }}&productDomainDateThreshold={{ product_domain_days_threshold }}&productsCount={{ productsCount }}&sortBy=added_date&sortOrder={{ 'asc' if sortBy == 'added_date' and sortOrder == 'desc' else 'desc' }}&addedDays={{ addedDays }}">
                         Added DateTime
                         {% if sortBy == 'added_date' %}
                             <span class="sort-icon {{ 'asc-icon' if sortOrder == 'asc' else 'desc-icon' }}"></span>
@@ -592,7 +592,7 @@
                 </th>
 
                 <th>
-                    <a href="/view_page_data?page={{ page }}&search={{ search_query }}&track_filter={{ track_filter }}&pageCreatedDateThreshold={{ page_created_days_threshold }}&resultCountThreshold={{ result_count_threshold }}&productCreatedDateThreshold={{ product_created_days_threshold }}&productDomainDateThreshold={{ product_domain_days_threshold }}&productsCount={{ productsCount }}&sortBy=last_update&sortOrder={{ 'asc' if sortBy == 'last_update' and sortOrder == 'desc' else 'desc' }}&addedDays={{ addedDays }}">
+                    <a href="/view_page_data?page={{ page }}&search={{ search_query }}&track_filter={{ track_filter }}&pageChangedDateThreshold={{ page_changed_days_threshold }}&resultCountThreshold={{ result_count_threshold }}&productCreatedDateThreshold={{ product_created_days_threshold }}&productDomainDateThreshold={{ product_domain_days_threshold }}&productsCount={{ productsCount }}&sortBy=last_update&sortOrder={{ 'asc' if sortBy == 'last_update' and sortOrder == 'desc' else 'desc' }}&addedDays={{ addedDays }}">
                         Last Update DateTime
                         {% if sortBy == 'last_update' %}
                             <span class="sort-icon {{ 'asc-icon' if sortOrder == 'asc' else 'desc-icon' }}"></span>
@@ -601,7 +601,7 @@
                 </th>
 
                 <th>
-                    <a href="/view_page_data?page={{ page }}&search={{ search_query }}&track_filter={{ track_filter }}&pageCreatedDateThreshold={{ page_created_days_threshold }}&resultCountThreshold={{ result_count_threshold }}&productCreatedDateThreshold={{ product_created_days_threshold }}&productDomainDateThreshold={{ product_domain_days_threshold }}&productsCount={{ productsCount }}&sortBy=track&sortOrder={{ 'asc' if sortBy == 'track' and sortOrder == 'desc' else 'desc' }}&addedDays={{ addedDays }}">
+                    <a href="/view_page_data?page={{ page }}&search={{ search_query }}&track_filter={{ track_filter }}&pageChangedDateThreshold={{ page_changed_days_threshold }}&resultCountThreshold={{ result_count_threshold }}&productCreatedDateThreshold={{ product_created_days_threshold }}&productDomainDateThreshold={{ product_domain_days_threshold }}&productsCount={{ productsCount }}&sortBy=track&sortOrder={{ 'asc' if sortBy == 'track' and sortOrder == 'desc' else 'desc' }}&addedDays={{ addedDays }}">
                         Track Status
                         {% if sortBy == 'track' %}
                             <span class="sort-icon {{ 'asc-icon' if sortOrder == 'asc' else 'desc-icon' }}"></span>
@@ -623,7 +623,7 @@
                 <td><a href="{{ data.product_link }}" target="_blank">{{ data.product_name }}</a></td>
                 <td >{{ data.formatted_prod_created_date }}<br><span style="color: rgb(94, 94, 94);"><i>({{ data.days_ago_prod_created_date }})</i></span></td>
                 <td>{{ data.formatted_domain_reg_date}}<br><span style="color: rgb(94, 94, 94);"><i>({{ data.days_ago_domain_reg_date}})</i></span></td>
-                <td><a href="{{ data.div_href }}"  target="_blank">{{ data.formatted_faceboook_created_date }}</a><br><span style="color: rgb(94, 94, 94);"><i>({{ data.days_ago_faceboook_created_date }})</i></span></td>
+                <td><a href="{{ data.div_href }}"  target="_blank">{{ data.formatted_facebook_changed_date }}</a><br><span style="color: rgb(94, 94, 94);"><i>({{ data.days_ago_facebook_changed_date }})</i></span></td>
                 <td><a href="{{ data.page_ads_link }}"  target="_blank">{{ data.result_count }}</a></td>
                 <td>{{ data.result_count_history }}</td>
                 <td>
@@ -669,14 +669,14 @@
     <!-- Pagination Controls -->
     <div class="pagination" style="display: flex; gap: 10px; justify-content: center; align-items: center;">
         <!-- Previous Button -->
-        <a href="/view_page_data?page={{ page - 1 }}&search={{ search_query }}&track_filter={{ track_filter }}&pageCreatedDateThreshold={{ page_created_days_threshold }}&resultCountThreshold={{ result_count_threshold }}&productCreatedDateThreshold={{ product_created_days_threshold }}&productDomainDateThreshold={{ product_domain_days_threshold }}&productsCount={{ productsCount }}&sortBy={{ sortBy }}&sortOrder={{ sortOrder }}&addedDays={{ addedDays }}" 
+        <a href="/view_page_data?page={{ page - 1 }}&search={{ search_query }}&track_filter={{ track_filter }}&pageChangedDateThreshold={{ page_changed_days_threshold }}&resultCountThreshold={{ result_count_threshold }}&productCreatedDateThreshold={{ product_created_days_threshold }}&productDomainDateThreshold={{ product_domain_days_threshold }}&productsCount={{ productsCount }}&sortBy={{ sortBy }}&sortOrder={{ sortOrder }}&addedDays={{ addedDays }}" 
         class="pagination-btn {{ 'disabled' if page <= 1 else '' }}" 
         style="{{ 'pointer-events: none; background-color: #ccc;' if page <= 1 else '' }}">
             Previous
         </a>
 
         <!-- First Page -->
-        <a href="/view_page_data?page=1&search={{ search_query }}&track_filter={{ track_filter }}&pageCreatedDateThreshold={{ page_created_days_threshold }}&resultCountThreshold={{ result_count_threshold }}&productCreatedDateThreshold={{ product_created_days_threshold }}&productDomainDateThreshold={{ product_domain_days_threshold }}&productsCount={{ productsCount }}&sortBy={{ sortBy }}&sortOrder={{ sortOrder }}&addedDays={{ addedDays }}" 
+        <a href="/view_page_data?page=1&search={{ search_query }}&track_filter={{ track_filter }}&pageChangedDateThreshold={{ page_changed_days_threshold }}&resultCountThreshold={{ result_count_threshold }}&productCreatedDateThreshold={{ product_created_days_threshold }}&productDomainDateThreshold={{ product_domain_days_threshold }}&productsCount={{ productsCount }}&sortBy={{ sortBy }}&sortOrder={{ sortOrder }}&addedDays={{ addedDays }}" 
         class="pagination-btn {{ 'active' if page == 1 else '' }}">
             1
         </a>
@@ -689,7 +689,7 @@
         <!-- Page Numbers Around Current Page -->
         {% for p in range(page - 2, page + 3) %}
             {% if p > 1 and p < total_pages %}
-                <a href="/view_page_data?page={{ p }}&search={{ search_query }}&track_filter={{ track_filter }}&pageCreatedDateThreshold={{ page_created_days_threshold }}&resultCountThreshold={{ result_count_threshold }}&productCreatedDateThreshold={{ product_created_days_threshold }}&productDomainDateThreshold={{ product_domain_days_threshold }}&productsCount={{ productsCount }}&sortBy={{ sortBy }}&sortOrder={{ sortOrder }}&addedDays={{ addedDays }}" 
+                <a href="/view_page_data?page={{ p }}&search={{ search_query }}&track_filter={{ track_filter }}&pageChangedDateThreshold={{ page_changed_days_threshold }}&resultCountThreshold={{ result_count_threshold }}&productCreatedDateThreshold={{ product_created_days_threshold }}&productDomainDateThreshold={{ product_domain_days_threshold }}&productsCount={{ productsCount }}&sortBy={{ sortBy }}&sortOrder={{ sortOrder }}&addedDays={{ addedDays }}" 
                 class="pagination-btn {{ 'active' if p == page else '' }}" 
                 style="{{ 'background-color: #007bff; color: white;' if p == page else '' }}">
                     {{ p }}
@@ -704,14 +704,14 @@
 
         <!-- Last Page (Show this page if you're on the last page or if not already shown) -->
         {% if total_pages > 1 %}
-            <a href="/view_page_data?page={{ total_pages }}&search={{ search_query }}&track_filter={{ track_filter }}&pageCreatedDateThreshold={{ page_created_days_threshold }}&resultCountThreshold={{ result_count_threshold }}&productCreatedDateThreshold={{ product_created_days_threshold }}&productDomainDateThreshold={{ product_domain_days_threshold }}&productsCount={{ productsCount }}&sortBy={{ sortBy }}&sortOrder={{ sortOrder }}&addedDays={{ addedDays }}" 
+            <a href="/view_page_data?page={{ total_pages }}&search={{ search_query }}&track_filter={{ track_filter }}&pageChangedDateThreshold={{ page_changed_days_threshold }}&resultCountThreshold={{ result_count_threshold }}&productCreatedDateThreshold={{ product_created_days_threshold }}&productDomainDateThreshold={{ product_domain_days_threshold }}&productsCount={{ productsCount }}&sortBy={{ sortBy }}&sortOrder={{ sortOrder }}&addedDays={{ addedDays }}" 
             class="pagination-btn {{ 'active' if page == total_pages else '' }}">
                 {{ total_pages }}
             </a>
         {% endif %}
 
         <!-- Next Button -->
-        <a href="/view_page_data?page={{ page + 1 }}&search={{ search_query }}&track_filter={{ track_filter }}&pageCreatedDateThreshold={{ page_created_days_threshold }}&resultCountThreshold={{ result_count_threshold }}&productCreatedDateThreshold={{ product_created_days_threshold }}&productDomainDateThreshold={{ product_domain_days_threshold }}&productsCount={{ productsCount }}&sortBy={{ sortBy }}&sortOrder={{ sortOrder }}&addedDays={{ addedDays }}" 
+        <a href="/view_page_data?page={{ page + 1 }}&search={{ search_query }}&track_filter={{ track_filter }}&pageChangedDateThreshold={{ page_changed_days_threshold }}&resultCountThreshold={{ result_count_threshold }}&productCreatedDateThreshold={{ product_created_days_threshold }}&productDomainDateThreshold={{ product_domain_days_threshold }}&productsCount={{ productsCount }}&sortBy={{ sortBy }}&sortOrder={{ sortOrder }}&addedDays={{ addedDays }}" 
         class="pagination-btn {{ 'disabled' if page >= total_pages else '' }}" 
         style="{{ 'pointer-events: none; background-color: #ccc;' if page >= total_pages else '' }}">
             Next
