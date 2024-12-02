@@ -183,7 +183,9 @@
         </form>
     </div>
 
-    {% if status %}
+    <!-- <button class="primary-button" id="restartButton">Restart App</button> -->
+
+    {% if url_status %}
     <div class="status-container">
         <h3>Ad Library Information</h3>
         <table class="status-table">
@@ -194,7 +196,7 @@
                 </tr>
             </thead>
             <tbody>
-                {% for key, value in status.items() %}
+                {% for key, value in url_status.items() %}
                     <tr>
                         <td><strong><a href="{{ key }}" target="_blank">{{ key }}</a></strong></td>
                         <td>{{ value }}</td>
@@ -233,6 +235,18 @@
             }, 500); // Delay clearing until the form submits
         });
     </script>
+
+
+<!-- <script>
+
+    document.getElementById('restartButton').addEventListener('click', function() {
+        fetch('/restart', { method: 'POST' })
+        .then(response => response.json())
+        .then(data => alert(data.message))
+        .catch(error => console.error('Error restarting app:', error));
+    });
+
+</script> -->
     
     
 

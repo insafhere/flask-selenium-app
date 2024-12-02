@@ -2,6 +2,8 @@ from operator import or_
 import os
 import platform
 import random
+import subprocess
+import sys
 import threading
 import requests
 import re
@@ -328,11 +330,13 @@ def new_get_domain_registration_date(domain):
         # [datetime.datetime(2012, 5, 11, 3, 31, 42), datetime.datetime(2012, 5, 10, 22, 31, 42)]
     
         formated_registration_date = convert_stringdate_to_date(str(format_to_dd_mon_yyyy(registration_date)))
+        if formated_registration_date is None:
+            print("ERROR - Invalid registration date format.")
+            return None
         # print("Domain Formated Registration Date : ", formated_registration_date)
         
     except Exception as e:
-        print(f"ERROR - Unable to retrieve registration date")
-        # print(f"ERROR - Unable to retrieve registration date: {str(e)}")
+        print(f"ERROR - Unable to retrieve registration date: {str(e)}")
         return None
     
     return formated_registration_date
@@ -878,12 +882,17 @@ def extract_library_ids(driver, keyword):
                             (div_library_id, "ERROR - Library ID is None, skip database entry.")
                         ]
 
+                        exit = False
                         for variable, error_message in checks:
                             if variable is None:
                                 status = error_message
                                 flag += 1  # Increment flag for each issue, if needed
+                                exit = True
                                 print(status)
-                                continue  # Skip to the next iteration
+                                continue  # Dont have to check other variable if one alredy has issues
+                        if exit:
+                            continue
+                        
 
                         if products_count <= 0:
                             status = "ERROR - Total Products Count is <= 0, skip database entry."
@@ -1271,7 +1280,7 @@ def keyword_loop_search():
         task_queue.put(get_random_combination(keywords_list))
 
     # Use ThreadPoolExecutor to handle keyword searches
-    with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
+    with concurrent.futures.ThreadPoolExecutor(max_workers=3) as executor:
         futures = []
 
         # As long as there's a task in the queue, submit it
@@ -1305,7 +1314,7 @@ def keyword_loop_search():
 
 @app.route("/ad_search", methods=["GET", "POST"])
 def ad_searcher():
-    status = None
+    url_status = keyword_status = None
 
     if request.method == "POST":
 
@@ -1316,7 +1325,7 @@ def ad_searcher():
             # Start a new thread for a single keyword search using ThreadPoolExecutor
             with concurrent.futures.ThreadPoolExecutor() as executor:
                 future = executor.submit(search_ad_library, keyword)
-                status = future.result()  # Wait for the result
+                keyword_status = future.result()  # Wait for the result
 
             print("------ Completed Keyword Search ------")
 
@@ -1325,11 +1334,11 @@ def ad_searcher():
             # Start a new thread for a single keyword search using ThreadPoolExecutor
             with concurrent.futures.ThreadPoolExecutor() as executor:
                 future = executor.submit(ads_info, url)
-                status = future.result()  # Wait for the result
+                url_status = future.result()  # Wait for the result
 
             print("------ Completed AD Lib Search ------")
 
-    return render_template("ad_search.html", status=status)
+    return render_template("ad_search.html", keyword_status=keyword_status,url_status=url_status )
 
 
 @app.route("/view_product_data/<int:days_ago>")
@@ -2169,6 +2178,24 @@ def update_error():
         # Commit the changes to the database
         db.session.commit()
 
+
+def delete_records_with_none_dates():
+    with app.app_context():
+        # Query records where the field is None
+        records_to_delete = ADSData.query.filter(
+            ADSData.domain_reg_date.is_(None)
+        ).all()
+
+        total_count = len(records_to_delete)
+        print(f"Total records to delete: {total_count}")
+
+        for count, record in enumerate(records_to_delete, start=1):
+            print(f"[{count}/{total_count}] Deleting record with ID: {record.id}")
+            # db.session.delete(record)
+
+        # db.session.commit()
+        print("All records deleted successfully!")
+
 def update_all_dates():
     with app.app_context():
         # Query records where either field is None
@@ -2312,6 +2339,41 @@ def ads_info(adlib_url):
 
     return product_ads_count
 
+# def restart_in_new_terminal():
+#     """
+#     Restart the Flask app in a new terminal window on the detected OS.
+#     """
+#     python = sys.executable  # Path to the Python interpreter
+#     script = sys.argv[0]  # Path to the current script
+
+#     if platform.system() == "Windows":
+#         # For Windows, directly open cmd.exe and run the command
+#         command = f'python {script}'  # Format the command to include the full path to the script
+#         subprocess.Popen(['cmd', '/c', f'start cmd /k {command}'], shell=True)
+#     elif platform.system() == "Darwin":
+#         # For macOS
+#         applescript = f"""
+#         tell application "Terminal"
+#             do script "{python} {script}"
+#         end tell
+#         """
+#         subprocess.Popen(['osascript', '-e', applescript])
+#     elif platform.system() == "Linux":
+#         # For Linux
+#         subprocess.Popen(['x-terminal-emulator', '-e', f"{python} {script}"])
+#     else:
+#         raise OSError("Unsupported operating system for restarting the app.")
+
+#     sys.exit()  # Exit the current process
+
+# @app.route('/restart', methods=['POST'])
+# def restart_app():
+#     """
+#     Endpoint to trigger a restart of the Flask application.
+#     """
+#     restart_in_new_terminal()
+#     return jsonify({"message": "App is restarting in a new terminal window."})
+
 if __name__ == "__main__":
     # Start the scheduler only if running locally
     if os.getenv('RENDER') != 'true':
@@ -2323,12 +2385,12 @@ if __name__ == "__main__":
             start_scheduler()  # Start the scheduler
             
             # Run keyword loop search - have to run in a seperate thread to not block main app
-            thread = threading.Thread(target=keyword_loop_search)
-            thread.daemon = True  # Make the thread a daemon so it exits when the main program exits
-            thread.start()
+            # thread = threading.Thread(target=keyword_loop_search)
+            # thread.daemon = True  # Make the thread a daemon so it exits when the main program exits
+            # thread.start()
 
-            # thread = threading.Thread(target=update_all_page_count_scheduler_tracked)
+            # thread = threading.Thread(target=delete_records_with_none_dates)
             # thread.daemon = True
             # thread.start()
 
-        app.run(debug=True, threaded=True, host=host, port=port)
+        app.run(debug=True, threaded=True, host=host, port=port, use_reloader=False)
