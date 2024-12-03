@@ -543,9 +543,6 @@ def get_actual_url(input_url):
 
 def extract_library_ids(driver, keyword):
 
-    database_count = 0
-    number = 0
-
     print("Extracting Ads results")
 
     ads_library_url = "https://www.facebook.com/ads/library/?ad_type=all&search_type=keyword_unordered&country=US&active_status=active&media_type=all&q=" + str(keyword)
@@ -557,7 +554,7 @@ def extract_library_ids(driver, keyword):
     print("Total Results Available: ", total_result_count)
 
     current_result_count = 0
-    
+
     processed_library_ids = set()  # To track already processed IDs
     processed_divs = set()  # Track processed divs to avoid reprocessing
     scroll_pause_time = 2  # Pause time between scrolls
@@ -573,9 +570,14 @@ def extract_library_ids(driver, keyword):
     keyword_database_count = 0 # Number of data added to database for the keyword
     loaded_results = 0 # Total AAs loaded for the keyword
 
+    extraction_rate_threshold = 2  # In percentage
+    extraction_minimum_attempts = 100
+    extraction_rate = 0.0  # Initial rate as float
+    run = True
+
     log_data = LogData(
         action = "AD SEARCH",
-        info = f'{{"Keyword": "{keyword}", "Available Results": {total_result_count}, "Loaded Results": {loaded_results}, "Extractions": {keyword_number}, "Database Count": {keyword_database_count}}}',
+        info = f'{{"Keyword": "{keyword}", "Available Results": {total_result_count}, "Loaded Results": {loaded_results}, "Extractions": {keyword_number}, "Database Count": {keyword_database_count}, "Extraction Rate": {extraction_rate}}}',
         status="PROCESSING",  # Status while processing
         start_time=start_time,  # Start time
         end_time=end_time,  # End time will be updated later
@@ -598,7 +600,7 @@ def extract_library_ids(driver, keyword):
 
         return status
 
-    while scroll_attempts < max_scroll_attempts:
+    while (scroll_attempts < max_scroll_attempts) and run:
         try:
             # Wait and find divs
             WebDriverWait(driver, 30).until(
@@ -669,11 +671,19 @@ def extract_library_ids(driver, keyword):
 
                         print("------------------------")
 
-                        number += 1
                         keyword_number += 1 
-                        log_data.info = f'{{"Keyword": "{keyword}", "Available Results": {total_result_count}, "Loaded Results": {loaded_results}, "Extractions": {keyword_number}, "Database Count": {keyword_database_count}}}'
 
-                        print(f"[Total Extract No. : {number}]")
+                        # Calculate extraction rate (in percentage)
+                        extraction_rate = round((keyword_database_count / keyword_number) * 100, 1)  # Format to 1 decimal place
+
+                        if (keyword_number > extraction_minimum_attempts) and (extraction_rate < extraction_rate_threshold):
+                            print(f"Extraction rate {extraction_rate}% is below the threshold. Exiting...")
+                            run = False
+                            break  # Immediately exit the loop
+
+                        log_data.info = f'{{"Keyword": "{keyword}", "Available Results": {total_result_count}, "Loaded Results": {loaded_results}, "Extractions": {keyword_number}, "Database Count": {keyword_database_count}, "Extraction Rate": {extraction_rate}}}'
+
+                        print(f"[Total Extract No. : {keyword_number}]")
 
                         added_date = last_update = datetime.now().replace(microsecond=0)
                         print(f"Added Date : {added_date}")
@@ -688,7 +698,7 @@ def extract_library_ids(driver, keyword):
                         log_data.status = "PROCESSING" # In case became ERROR - Incomplete
                         db.session.commit()
 
-                        print(f"Added To Database Count: {database_count}")
+                        print(f"Added To Database Count: {keyword_database_count}")
     
                         print(f"Keyword: {keyword}")
                         print(f"Library ID: {div_library_id}")
@@ -904,7 +914,6 @@ def extract_library_ids(driver, keyword):
                         if exit:
                             continue
                         
-
                         if products_count <= 0:
                             status = "ERROR - Total Products Count is <= 0, skip database entry."
                             flag += 1
@@ -939,11 +948,9 @@ def extract_library_ids(driver, keyword):
                         )
                         db.session.add(new_data)
 
-                        database_count += 1
-
                         # Update log data
                         keyword_database_count += 1
-                        log_data.info = f'{{"Keyword": "{keyword}", "Available Results": {total_result_count}, "Loaded Results": {loaded_results}, "Extractions": {keyword_number}, "Database Count": {keyword_database_count}}}'
+                        log_data.info = f'{{"Keyword": "{keyword}", "Available Results": {total_result_count}, "Loaded Results": {loaded_results}, "Extractions": {keyword_number}, "Database Count": {keyword_database_count}, "Extraction Rate": {extraction_rate}}}'
                         log_data.end_time = datetime.now().replace(microsecond=0)
                         log_data.execution_time = str(log_data.end_time - log_data.start_time)
 
@@ -955,7 +962,8 @@ def extract_library_ids(driver, keyword):
                         print(status)
 
                         flag = 0 # Reset to 0 since no issue storing into database
-                
+
+
                 # ADD THE EXCEPT HERE
                 except Exception as e:
                     status = "ERROR - Issue within loop"
@@ -990,7 +998,11 @@ def extract_library_ids(driver, keyword):
             return status
     
     print("------------------------")
-    status = "SUCCESS - Completed"
+    if run:
+        status = "SUCCESS - Completed"
+    else:
+        status = "ERROR - Extraction"
+
     print(status)
 
     log_data.status = status
@@ -1014,7 +1026,7 @@ def get_facebook_changed_date(driver, page_creation_date):
 
         # Wait until more than 2 elements are found
         WebDriverWait(driver, 10).until(
-            lambda driver: len(driver.find_elements(By.XPATH, "//*[contains(@class, 'x676frb') and contains(@class, 'x1nxh6w3')]")) > 2
+            lambda driver: len(driver.find_elements(By.XPATH, "//*[contains(@class, 'x676frb') and contains(@class, 'x1nxh6w3')]")) > 3
         )
 
         # Now that we know there are more than 2 elements, find them
@@ -2501,12 +2513,12 @@ if __name__ == "__main__":
             start_scheduler()  # Start the scheduler
             
             # Run keyword loop search - have to run in a seperate thread to not block main app
-            thread = threading.Thread(target=keyword_loop_search)
-            thread.daemon = True  # Make the thread a daemon so it exits when the main program exits
-            thread.start()
+            # thread = threading.Thread(target=keyword_loop_search)
+            # thread.daemon = True  # Make the thread a daemon so it exits when the main program exits
+            # thread.start()
 
-            thread = threading.Thread(target=update_all_facebook_changed_dates)
-            thread.daemon = True
-            thread.start()
+            # thread = threading.Thread(target=update_all_facebook_changed_dates)
+            # thread.daemon = True
+            # thread.start()
 
         app.run(debug=True, threaded=True, host=host, port=port, use_reloader=False)
