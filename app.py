@@ -108,6 +108,8 @@ class ADSData(db.Model):
 
     track = db.Column(db.Boolean, default=False) # Tracking Status ( Whether To Track Product )
 
+    update_changed_date = db.Column(db.Boolean, default=False)
+
 # Define the database model
 class LogData(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -835,7 +837,8 @@ def extract_library_ids(driver, keyword):
                         print(f"Page Name: {page_name}")
 
                         #####  EXTRACT PAGE LAST CHANGED DATE ####
-                        facebook_changed_date = get_facebook_changed_date(driver, faceboook_created_date)
+                        facebook_changed_date = get_facebook_changed_date(driver)
+                        update_changed_date = True
                         print(f"Facebook Latest Changed Date: {facebook_changed_date}")
 
                         # if facebook_changed_date != faceboook_created_date:
@@ -944,7 +947,8 @@ def extract_library_ids(driver, keyword):
                             domain = domain,
                             last_update = last_update,
                             added_date = added_date,
-                            facebook_changed_date = facebook_changed_date
+                            facebook_changed_date = facebook_changed_date,
+                            update_changed_date = update_changed_date # remove once all done
                         )
                         db.session.add(new_data)
 
@@ -960,6 +964,9 @@ def extract_library_ids(driver, keyword):
                         
                         status = "SUCCESS - Data stored in database successfully"
                         print(status)
+
+                        # Give 1 sec break, for other task to step in...
+                        time.sleep(1)
 
                         flag = 0 # Reset to 0 since no issue storing into database
 
@@ -1012,7 +1019,7 @@ def extract_library_ids(driver, keyword):
 
     return status
 
-def get_facebook_changed_date(driver, page_creation_date):
+def get_facebook_changed_date(driver):
     facebook_changed_date = None
     try:
         driver.execute_script("""
@@ -1024,39 +1031,40 @@ def get_facebook_changed_date(driver, page_creation_date):
 
         # print("Clicked 'See All' Button...")
 
-        # Wait until more than 2 elements are found
+        # Wait until at least 3 elements are found
         WebDriverWait(driver, 10).until(
-            lambda driver: len(driver.find_elements(By.XPATH, "//*[contains(@class, 'x676frb') and contains(@class, 'x1nxh6w3')]")) > 3
+            lambda driver: len(driver.find_elements(By.XPATH, "//*[contains(@class, 'x676frb') and contains(@class, 'x1nxh6w3')]")) >= 2
         )
 
         # Now that we know there are more than 2 elements, find them
         elements = driver.find_elements(By.XPATH, "//*[contains(@class, 'x676frb') and contains(@class, 'x1nxh6w3')]")
 
-        # Check if there are at least two elements and print their text
-        if len(elements) > 2:
-            # print(f"First element text: {elements[0].text}")  # Index 0 corresponds to the first element
-            # print(f"Second element text: {elements[1].text}")  # Index 1 corresponds to the second element
-            # print(f"Third element text: {elements[2].text}")  # Index 1 corresponds to the second element
-            
-            # print(f"Element text: {elements[2].text}")  # Index 1 corresponds to the second element
+        found = False
 
+        for index in range(len(elements)):
             try:
-                # Try parsing the date, check if its even a
-                if datetime.strptime(elements[2].text, "%B %d, %Y"):
-                    facebook_changed_date = convert_stringdate_to_date(validate_and_format_date(elements[2].text))
+                # Attempt to parse the text of the current element as a date
+                text = elements[index].text.strip()
+                print(f"Index {index}: {text}")
+                
+                datetime.strptime(text, "%B %d, %Y") # If this passes, the text is a valid date (Else, goes to ValueError)
+
+                facebook_changed_date = convert_stringdate_to_date(validate_and_format_date(text))
+                found = True
+                # print(f"Facebook Latest Changed Date Found: {facebook_changed_date}")
+                break  # Exit the loop once a valid date is found
             except ValueError:
-                # Handle the case when the date format doesn't match
-                # print("Invalid date format, so update facebook_changed_date as page_creation_date")
-                facebook_changed_date = page_creation_date
-            
-            # print(f"Facebook Latest Changed Date: {facebook_changed_date}")
-        else:
-            print("ERROR - Facebook Latest Changed Date not found")
-            facebook_changed_date = page_creation_date
-    
+                # If parsing fails, the text is not a valid date
+                continue
+
+        if not found:
+            facebook_changed_date = None
+            print("No valid date found in the elements. Facebook Changed Date set as None.")
+
     except Exception as e:
         print(f"Error: {e}")
-        return page_creation_date
+        facebook_changed_date = None
+        return facebook_changed_date
     
     return facebook_changed_date
 
@@ -1268,7 +1276,17 @@ def view_product_data():
 
 
 
-
+def format_time_string(time_str):
+    # Split the time string into hours, minutes, and seconds
+    hours, minutes, seconds = map(int, time_str.split(':'))
+    
+    # Build the human-readable format
+    if hours == 0 and minutes == 0:
+        return f"{seconds}s"
+    elif hours == 0:
+        return f"{minutes}m {seconds}s"
+    else:
+        return f"{hours}h {minutes}m {seconds}s"
 
 
 @app.route("/view_log_data")
@@ -1305,6 +1323,12 @@ def view_log_data():
     all_data = paginated_data.items
     total_pages = paginated_data.pages
     current_page = paginated_data.page
+
+    # Add formatted dates to the data
+    for data in all_data:
+        data.formatted_start_time, data.time_ago_start_time = format_datetime(data.start_time)
+        data.formatted_end_time, data.time_ago_end_time  = format_datetime(data.end_time)
+        data.formatted_execution_time = format_time_string(data.execution_time)
 
     return render_template(
         "view_log_data.html",
@@ -2016,6 +2040,45 @@ def edit_product_data():
     
     return redirect("/view_product_data")  # Redirect back to the view data page
 
+# Process dates for formatting
+def format_datetime(date_time):
+    if date_time is None:
+        return None, None  # Return None for both formatted date and time ago
+
+    now = datetime.now()
+    time_diff = now - date_time
+    days_ago = time_diff.days
+    seconds_ago = time_diff.total_seconds()
+    formatted_date = date_time.strftime("%d-%b-%Y %I:%M%p")
+
+    # Determine "X Time Ago"
+    if seconds_ago < 60:
+        time_ago = f"{int(seconds_ago)} seconds ago"
+    elif seconds_ago < 3600:
+        time_ago = f"{int(seconds_ago // 60)} minutes ago"
+    elif seconds_ago < 86400:
+        time_ago = f"{int(seconds_ago // 3600)} hours ago"
+    else:
+        time_ago = f"{days_ago} days ago"
+
+    return formatted_date, time_ago
+
+# Future use 
+def format_date(date):
+    try:
+        today = datetime.now().date()
+        days_ago = (today - date).days
+        formatted_date = date.strftime("%d-%b-%Y")
+
+        if days_ago == 0:
+            return formatted_date, "Today"
+        elif days_ago == 1:
+            return formatted_date, "Yesterday"
+        else:
+            return formatted_date, f"{days_ago} days ago"
+    
+    except Exception as e:
+        return None, None
 
 @app.route("/view_page_data")
 def view_page_data():
@@ -2111,46 +2174,6 @@ def view_page_data():
         all_data = paginated_data.items
         total_pages = paginated_data.pages
         current_page = paginated_data.page
-
-        # Process dates for formatting
-        def format_datetime(date_time):
-            if date_time is None:
-                return None, None  # Return None for both formatted date and time ago
-    
-            now = datetime.now()
-            time_diff = now - date_time
-            days_ago = time_diff.days
-            seconds_ago = time_diff.total_seconds()
-            formatted_date = date_time.strftime("%d-%b-%Y %I:%M%p")
-
-            # Determine "X Time Ago"
-            if seconds_ago < 60:
-                time_ago = f"{int(seconds_ago)} seconds ago"
-            elif seconds_ago < 3600:
-                time_ago = f"{int(seconds_ago // 60)} minutes ago"
-            elif seconds_ago < 86400:
-                time_ago = f"{int(seconds_ago // 3600)} hours ago"
-            else:
-                time_ago = f"{days_ago} days ago"
-
-            return formatted_date, time_ago
-        
-        # Future use 
-        def format_date(date):
-            try:
-                today = datetime.now().date()
-                days_ago = (today - date).days
-                formatted_date = date.strftime("%d-%b-%Y")
-
-                if days_ago == 0:
-                    return formatted_date, "Today"
-                elif days_ago == 1:
-                    return formatted_date, "Yesterday"
-                else:
-                    return formatted_date, f"{days_ago} days ago"
-            
-            except Exception as e:
-                return None, None
 
         # Add formatted dates to the data
         for data in all_data:
@@ -2257,13 +2280,27 @@ def update_error():
 
 def update_all_facebook_changed_dates():
     with app.app_context():
-        # Query records where the 'facebook_changed_date' field is None
+
+        # # Query records where the 'facebook_changed_date' field is None
+        # records_to_update = ADSData.query.filter(
+        #     ADSData.facebook_changed_date.is_(None)
+        # ).all()
+
+        # # Query all records
+        # records_to_update = ADSData.query.all()
+
+        # # Query records where the 'update_changed_date' field is False
         records_to_update = ADSData.query.filter(
-            ADSData.facebook_changed_date.is_(None)
+            or_(
+                ADSData.update_changed_date.is_(None),
+                ADSData.facebook_changed_date.is_(None)
+            )
         ).all()
 
+    
         total_count = len(records_to_update)
         print(f"Total records to update: {total_count}")
+
 
         # Initialize the driver
         driver = initialize_driver()
@@ -2279,19 +2316,22 @@ def update_all_facebook_changed_dates():
                 print(f"Facebook Created Date: {record.faceboook_created_date}")
                 
                 # Call function to get the latest changed date
-                facebook_changed_date = get_facebook_changed_date(driver, record.faceboook_created_date)
+                facebook_changed_date = get_facebook_changed_date(driver)
                 print(f"Facebook Latest Changed Date: {facebook_changed_date}")
 
                 # Skip if None
                 if facebook_changed_date is None:
-                    # db.session.delete(record)
-                    # db.session.commit()
-                    print(f"Page Changed Date is None, so deleting record...")
+                    db.session.delete(record)
+                    db.session.commit()
+                    print(f"Page Changed Date is None. Deleting record/")
                     continue
+                else:
+                    record.update_changed_date = True
+
 
                 # Update the record with the new date
                 record.facebook_changed_date = facebook_changed_date
-
+                
                 # Commit after every record if needed (optional based on batch commit preference)
                 db.session.commit()
 
@@ -2513,12 +2553,12 @@ if __name__ == "__main__":
             start_scheduler()  # Start the scheduler
             
             # Run keyword loop search - have to run in a seperate thread to not block main app
-            # thread = threading.Thread(target=keyword_loop_search)
-            # thread.daemon = True  # Make the thread a daemon so it exits when the main program exits
-            # thread.start()
+            thread = threading.Thread(target=keyword_loop_search)
+            thread.daemon = True  # Make the thread a daemon so it exits when the main program exits
+            thread.start()
 
-            # thread = threading.Thread(target=update_all_facebook_changed_dates)
-            # thread.daemon = True
-            # thread.start()
+            thread = threading.Thread(target=update_all_facebook_changed_dates)
+            thread.daemon = True
+            thread.start()
 
         app.run(debug=True, threaded=True, host=host, port=port, use_reloader=False)
