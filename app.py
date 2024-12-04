@@ -569,17 +569,20 @@ def extract_library_ids(driver, keyword):
     start_time = end_time = datetime.now().replace(microsecond=0)
     execution_duration = str(end_time - start_time)
     keyword_number = 0 # Total number of extractions for the keyword
-    keyword_database_count = 0 # Number of data added to database for the keyword
+    keyword_inclusion_count = 0 # Number of data added to database for the keyword
     loaded_results = 0 # Total AAs loaded for the keyword
 
-    extraction_rate_threshold = 2  # In percentage
+    inclusion_rate_threshold = 2  # In percentage
+    inclusion_rate = 0.0  # Initial rate as float
     extraction_minimum_attempts = 100
-    extraction_rate = 0.0  # Initial rate as float
+    extraction_speed = 0
+    inclusion_speed = 0
+    
     run = True
 
     log_data = LogData(
         action = "AD SEARCH",
-        info = f'{{"Keyword": "{keyword}", "Available Results": {total_result_count}, "Loaded Results": {loaded_results}, "Extractions": {keyword_number}, "Database Count": {keyword_database_count}, "Extraction Rate": {extraction_rate}}}',
+        info = f'{{"Keyword": "{keyword}", "Available Results": {total_result_count}, "Loaded Results": {loaded_results}, "Extractions": {keyword_number}, "Extraction Speed": {extraction_speed}/h, "Inclusions": {keyword_inclusion_count}, "Inclusion Speed": {inclusion_speed}/h, "Inclusion Rate": {inclusion_rate}%}}',
         status="PROCESSING",  # Status while processing
         start_time=start_time,  # Start time
         end_time=end_time,  # End time will be updated later
@@ -675,15 +678,27 @@ def extract_library_ids(driver, keyword):
 
                         keyword_number += 1 
 
-                        # Calculate extraction rate (in percentage)
-                        extraction_rate = round((keyword_database_count / keyword_number) * 100, 1)  # Format to 1 decimal place
+                        # Calculate end time and execution time
+                        log_data.end_time = datetime.now().replace(microsecond=0)
+                        log_data.execution_time = str(log_data.end_time - log_data.start_time)  # String format for logging
+                        log_data.status = "PROCESSING"  # Status for incomplete execution
 
-                        if (keyword_number > extraction_minimum_attempts) and (extraction_rate < extraction_rate_threshold):
-                            print(f"Extraction rate {extraction_rate}% is below the threshold. Exiting...")
+                        # Convert execution time to seconds for speed calculations
+                        execution_time_seconds = (log_data.end_time - log_data.start_time).total_seconds()
+
+                        # Calculate speeds in per hour
+                        extraction_speed = round((keyword_number / execution_time_seconds) * 3600)  # Extractions per hour
+                        inclusion_speed = round((keyword_inclusion_count / execution_time_seconds) * 3600)  # Inclusions per hour
+
+                        # Calculate Inclusion Rate (in percentage)
+                        inclusion_rate = round((keyword_inclusion_count / keyword_number) * 100, 1)  # Format to 1 decimal place
+
+                        if (keyword_number > extraction_minimum_attempts) and (inclusion_rate < inclusion_rate_threshold):
+                            print(f"Inclusion Rate {inclusion_rate}% is below the threshold. Exiting...")
                             run = False
                             break  # Immediately exit the loop
 
-                        log_data.info = f'{{"Keyword": "{keyword}", "Available Results": {total_result_count}, "Loaded Results": {loaded_results}, "Extractions": {keyword_number}, "Database Count": {keyword_database_count}, "Extraction Rate": {extraction_rate}}}'
+                        log_data.info = f'{{"Keyword": "{keyword}", "Available Results": {total_result_count}, "Loaded Results": {loaded_results}, "Extractions": {keyword_number}, "Extraction Speed": {extraction_speed}/h, "Inclusions": {keyword_inclusion_count}, "Inclusion Speed": {inclusion_speed}/h, "Inclusion Rate": {inclusion_rate}%}}'
 
                         print(f"[Total Extract No. : {keyword_number}]")
 
@@ -695,12 +710,9 @@ def extract_library_ids(driver, keyword):
                         loaded_results += div_ads_count
                         print(f"Iteration Result Load: {current_result_count} / {total_result_count}")
 
-                        log_data.end_time = datetime.now().replace(microsecond=0)
-                        log_data.execution_time = str(log_data.end_time - log_data.start_time)
-                        log_data.status = "PROCESSING" # In case became ERROR - Incomplete
                         db.session.commit()
 
-                        print(f"Added To Database Count: {keyword_database_count}")
+                        print(f"Added To Database: {keyword_inclusion_count}")
     
                         print(f"Keyword: {keyword}")
                         print(f"Library ID: {div_library_id}")
@@ -785,8 +797,8 @@ def extract_library_ids(driver, keyword):
                         driver.get(facebook_about_page)
                         
                         # Wait for the creation date element to load (adjust XPath if needed)
-                        creation_date_span = faceboook_created_date = None
-                        page_id_span = page_id = page_ads_link = None
+                        faceboook_created_date = None
+                        page_id = page_ads_link = None
                         result_count = None
 
                         #####  EXTRACT PAGE CREATION DATE & PAGE ID ####
@@ -953,10 +965,19 @@ def extract_library_ids(driver, keyword):
                         db.session.add(new_data)
 
                         # Update log data
-                        keyword_database_count += 1
-                        log_data.info = f'{{"Keyword": "{keyword}", "Available Results": {total_result_count}, "Loaded Results": {loaded_results}, "Extractions": {keyword_number}, "Database Count": {keyword_database_count}, "Extraction Rate": {extraction_rate}}}'
+                        keyword_inclusion_count += 1
+
                         log_data.end_time = datetime.now().replace(microsecond=0)
                         log_data.execution_time = str(log_data.end_time - log_data.start_time)
+
+                        # Convert execution time to seconds for speed calculations
+                        execution_time_seconds = (log_data.end_time - log_data.start_time).total_seconds()
+
+                        # Calculate speeds in per hour
+                        extraction_speed = round((keyword_number / execution_time_seconds) * 3600)  # Extractions per hour
+                        inclusion_speed = round((keyword_inclusion_count / execution_time_seconds) * 3600)  # Inclusions per hour
+
+                        log_data.info = f'{{"Keyword": "{keyword}", "Available Results": {total_result_count}, "Loaded Results": {loaded_results}, "Extractions": {keyword_number}, "Extraction Speed": {extraction_speed}/h, "Inclusions": {keyword_inclusion_count}, "Inclusion Speed": {inclusion_speed}/h, "Inclusion Rate": {inclusion_rate}%}}'
 
                         print("Storing data in the database")
                         # Save to the database
@@ -1786,6 +1807,7 @@ def update_all_page_count(tracked):
                 log_data.info = f"Update Data : {count}/{data_count}"
                 log_data.end_time = datetime.now().replace(microsecond=0)
                 log_data.execution_time = str(datetime.now().replace(microsecond=0) - log_data.start_time)
+                log_data.status = "PROCESSING"
 
                 db.session.commit()
 
