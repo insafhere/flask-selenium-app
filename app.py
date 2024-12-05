@@ -572,7 +572,10 @@ def extract_library_ids(driver, keyword):
     keyword_inclusion_count = 0 # Number of data added to database for the keyword
     loaded_results = 0 # Total AAs loaded for the keyword
 
-    inclusion_rate_threshold = 2  # In percentage
+    inclusion_rate_threshold = 2.0
+    extraction_speed_threshold = 450
+    inclusion_speed_threshold = 20
+
     inclusion_rate = 0.0  # Initial rate as float
     extraction_minimum_attempts = 100
     extraction_speed = 0
@@ -693,10 +696,22 @@ def extract_library_ids(driver, keyword):
                         # Calculate Inclusion Rate (in percentage)
                         inclusion_rate = round((keyword_inclusion_count / keyword_number) * 100, 1)  # Format to 1 decimal place
 
-                        if (keyword_number > extraction_minimum_attempts) and (inclusion_rate < inclusion_rate_threshold):
-                            print(f"Inclusion Rate {inclusion_rate}% is below the threshold. Exiting...")
-                            run = False
-                            break  # Immediately exit the loop
+                        if keyword_number > extraction_minimum_attempts:
+                            if inclusion_rate < inclusion_rate_threshold:
+                                print(f"Inclusion Rate {inclusion_rate}% is below the threshold. Exiting...")
+                                run = False
+                                status = "ERROR - Inclusion Rate"
+                            elif extraction_speed < extraction_speed_threshold:
+                                print(f"Extraction Speed {extraction_speed} is below the threshold. Exiting...")
+                                run = False
+                                status = "ERROR - Extraction Speed"
+                            elif inclusion_speed < inclusion_speed_threshold:
+                                print(f"Inclusion Speed {inclusion_speed} is below the threshold. Exiting...")
+                                run = False
+                                status = "ERROR - Inclusion Speed"
+                            
+                            if not run:  # Exit if any error condition was met
+                                break
 
                         log_data.info = f'{{"Keyword": "{keyword}", "Available Results": {total_result_count}, "Loaded Results": {loaded_results}, "Extractions": {keyword_number}, "Extraction Speed": {extraction_speed}/h, "Inclusions": {keyword_inclusion_count}, "Inclusion Speed": {inclusion_speed}/h, "Inclusion Rate": {inclusion_rate}%}}'
 
@@ -1028,8 +1043,7 @@ def extract_library_ids(driver, keyword):
     print("------------------------")
     if run:
         status = "SUCCESS - Completed"
-    else:
-        status = "ERROR - Extraction"
+    # Status for Inclusion & Extraction is set above in the loop
 
     print(status)
 
@@ -1066,7 +1080,7 @@ def get_facebook_changed_date(driver):
             try:
                 # Attempt to parse the text of the current element as a date
                 text = elements[index].text.strip()
-                print(f"Index {index}: {text}")
+                # print(f"Index {index}: {text}")
                 
                 datetime.strptime(text, "%B %d, %Y") # If this passes, the text is a valid date (Else, goes to ValueError)
 
@@ -2265,7 +2279,7 @@ def update_error():
     
     with app.app_context():
 
-        print("updating error...")
+        print("UPDATE ERROR - Change 'PROCESSING' Status to 'ERROR - Incomplete'")
 
         # Log data
         # log_data = LogData(
@@ -2281,15 +2295,9 @@ def update_error():
 
         # Get all log entries with status "PROCESSING"
         processing_logs = LogData.query.filter_by(status="PROCESSING").all()
-        processing_count = 0
         
-        # Current time
-        now = datetime.now()
         for log in processing_logs:
-            # Check if end_time is more than 1 minute old
-            if log.end_time and (now - log.end_time > timedelta(minutes=1)):
-                log.status = "ERROR - Incomplete"
-                processing_count += 1
+            log.status = "ERROR - Incomplete"
 
         # status= "SUCCESS - Completed"
         # log_data.status = status
@@ -2411,10 +2419,13 @@ def start_scheduler():
     # Run the function every 2 hours ( seconds=30 , minutes = 1 , hours=1)
     # scheduler.add_job(update_all_page_count_scheduler, 'interval', hours=5)
 
-    scheduler.add_job(update_error, 'interval', minutes=1)
+    # scheduler.add_job(update_error, 'interval', minutes=1)
+
+    # Schedule `update_error` to run immediately (with a short delay to ensure execution)
+    scheduler.add_job(update_error, 'date', run_date=datetime.now())
 
     # Stagger the second job by adding a 1-minute offset
-    scheduler.add_job(update_all_page_count_scheduler_tracked, 'interval', hours=1, minutes=30)
+    scheduler.add_job(update_all_page_count_scheduler_tracked, 'interval', hours=2)
 
     scheduler.start()
     
@@ -2579,8 +2590,8 @@ if __name__ == "__main__":
             thread.daemon = True  # Make the thread a daemon so it exits when the main program exits
             thread.start()
 
-            thread = threading.Thread(target=update_all_facebook_changed_dates)
-            thread.daemon = True
-            thread.start()
+            # thread = threading.Thread(target=update_all_facebook_changed_dates)
+            # thread.daemon = True
+            # thread.start()
 
         app.run(debug=True, threaded=True, host=host, port=port, use_reloader=False)
