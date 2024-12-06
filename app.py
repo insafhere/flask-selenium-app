@@ -572,9 +572,9 @@ def extract_library_ids(driver, keyword):
     keyword_inclusion_count = 0 # Number of data added to database for the keyword
     loaded_results = 0 # Total AAs loaded for the keyword
 
-    inclusion_rate_threshold = 2.0
-    extraction_speed_threshold = 450
-    inclusion_speed_threshold = 20
+    inclusion_rate_threshold = 1.5
+    extraction_speed_threshold = 400
+    inclusion_speed_threshold = 15
 
     inclusion_rate = 0.0  # Initial rate as float
     extraction_minimum_attempts = 100
@@ -1410,14 +1410,16 @@ def keyword_loop_search():
     for _ in range(2):  # Start with 2 tasks
         task_queue.put(get_random_combination(keywords_list))
 
+
+    workers = 2
     # Use ThreadPoolExecutor to handle keyword searches
-    with concurrent.futures.ThreadPoolExecutor(max_workers=3) as executor:
+    with concurrent.futures.ThreadPoolExecutor(max_workers=workers) as executor:
         futures = []
 
         # As long as there's a task in the queue, submit it
         while continue_search:
             # If the number of running tasks is less than max workers (i.e., a worker is available)
-            if len(futures) < 2:
+            if len(futures) < workers:
                 # Get the next keyword from the queue and submit the task
                 keyword = task_queue.get()
                 future = executor.submit(search_ad_library, keyword)
