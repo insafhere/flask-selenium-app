@@ -918,8 +918,16 @@ def extract_library_ids(driver, keyword):
                         new_data_found = True
 
                         if(flag > 5):
-                            status = "ERROR - More than 5 flags, terminate extractions"
-                            print(status)
+                            # status = "ERROR - More than 5 flags, terminate extractions"
+                            # print(status)
+
+                            status = "ERROR - Flags"
+                            print(f"ERROR encountered: {e}")
+
+                            log_data.status = status
+                            log_data.end_time = datetime.now().replace(microsecond=0)
+                            log_data.execution_time = str(datetime.now().replace(microsecond=0) - log_data.start_time)
+                            db.session.commit()
                             return status
 
                         # Define variables and their corresponding error messages
